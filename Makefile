@@ -6,4 +6,4 @@ INC_LUA = -I/usr/local/Cellar/lua/5.2.4_4/include -L/usr/local/Cellar/lua/5.2.4_
 all:
 	g++ -o test ./main.cpp $(INC_RECAST) $(SRC_RECAST) $(INC_LUA)
 lua:
-	cc -bundle -undefined dynamic_lookup -o module.so module.cpp  $(INC_RECAST) $(SRC_RECAST)
+	cc -bundle -undefined dynamic_lookup -o recastlua_cmod.so recastlua_cmod.cpp  $(INC_RECAST) $(SRC_RECAST)
