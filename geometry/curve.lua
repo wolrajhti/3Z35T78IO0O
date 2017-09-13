@@ -1,7 +1,7 @@
 local Curve = class('Curve')
 
-local Vector = require 'src.geometry.vector'
-local VerticesConverter = require 'src.geometry.verticesConverter'
+-- local Vector = require 'geometry.modules.vector'
+-- local VerticesConverter = require 'geometry.modules.verticesConverter'
 
 function Curve:initialize(vertices)
 	VerticesConverter.clean(vertices)
@@ -61,7 +61,7 @@ function Curve:getCoordinates(t0, t1)
 	for i, time in ipairs(self.times) do
 		if t0 < time and time < t1 then
 			table.insert(line, self.vertices[i].x)
-			table.insert(line, self.vertices[i].y)			
+			table.insert(line, self.vertices[i].y)
 		end
 	end
 	local v1 = self:getPosition(t1)
@@ -93,7 +93,7 @@ end
 function Curve:interpolateTime(t, i)
 	i = i or self:getTimeIndex(t)
 	return (t - self.times[i]) / (self.times[i + 1] - self.times[i]), i
-	
+
 end
 
 function Curve:getPosition(t)
@@ -158,7 +158,7 @@ end
 function Curve:getIntersectionsWithCircle(r, X, y)
 	X = Vector(X, y)
 	local r2, inters = math.pow(r, 2), {}
-	for i = 1, #self.times - 1 do		
+	for i = 1, #self.times - 1 do
 		local v, w = self.vertices[i + 1] - self.vertices[i], X - self.vertices[i]
 		local n2 = v:norm2()
 		local t = v:dot(w) / n2
@@ -221,7 +221,7 @@ end
 function Curve:updateTime(t, dt)
 	-- debug:write('début de la boucle Curve:update('..t..', '..dt..')\n')
 	if dt > 0 then
-	-- debug:write('if dt > 0 then\n')		
+	-- debug:write('if dt > 0 then\n')
 		if t == 1 then
 		-- debug:write('if t == 1 then\n')
 			return t, dt

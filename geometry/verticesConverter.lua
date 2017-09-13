@@ -1,6 +1,6 @@
 local VerticesConverter = class('VerticesConverter')
 
-local Vector = require 'src.geometry.vector'
+-- local Vector = require 'vector'
 
 function VerticesConverter:initialize()
 end

@@ -14,6 +14,8 @@ local rcSx, rcSy, rcEx, rcEy = nil, nil, nil, nil
 local rcThrough = {}
 local rcPath = {}
 local rcSPath = {}
+local rcCurve = nil
+local rcT = 0
 
 local function imap(t, func)
 	local tm = {}
@@ -104,6 +106,7 @@ local recast = {
 		rcThrough = {}
 		rcPath = {}
 		rcSPath = {}
+		rcCurve = {}
 		for i = 6, #data - 2 * sCount do
 			rcThrough[data[i] + 1] = true
 			table.insert(rcPath, data[i] + 1)
@@ -111,6 +114,12 @@ local recast = {
 		for i = #data - 2 * sCount + 1, #data do
 			table.insert(rcSPath, data[i])
 		end
+		local verts = {}
+		for i = #data - 2 * sCount + 1, #data, 2 do
+			table.insert(verts, Vector(data[i + 0], data[i + 1]))
+		end
+		rcCurve = Curve(verts)
+		rcT = 0
 	end,
 	-- graphics
 	drawTriangles = function()
@@ -164,18 +173,29 @@ local recast = {
 	end,
 	drawRCSPath = function()
 		if #rcSPath > 3 then
-			love.graphics.setColor(255, 200, 200)
+			-- love.graphics.setColor(255, 200, 200)
+			love.graphics.setColor(200, 200, 0)
 			love.graphics.line(rcSPath)
 		end
 	end,
 	drawStartEnd = function()
-		if rcSx and rcSy then
-			love.graphics.setColor(0, 200, 0)
-			love.graphics.circle('fill', rcSx, rcSy, rcWalkableRadius)
-		end
-		if rcEx and rcEy then
-			love.graphics.setColor(200, 0, 0)
-			love.graphics.circle('fill', rcEx, rcEy, rcWalkableRadius)
+		if rcCurve then
+			-- love.graphics.setColor(0, 0, 200)
+			love.graphics.setColor(200 * rcT, 200 * (1 - rcT), 0)
+			local x, y = rcCurve:getPosition(rcT):unpack()
+			love.graphics.circle('fill', x, y, rcWalkableRadius)
+			-- love.graphics.setColor(200, 100, 25)
+			love.graphics.setColor(200, 200, 0)
+			love.graphics.circle('line', x, y, rcWalkableRadius)
+		else
+			if rcSx and rcSy then
+				love.graphics.setColor(0, 200, 0)
+				love.graphics.circle('fill', rcSx, rcSy, rcWalkableRadius)
+			end
+			if rcEx and rcEy then
+				love.graphics.setColor(200, 0, 0)
+				love.graphics.circle('fill', rcEx, rcEy, rcWalkableRadius)
+			end
 		end
 	end,
 	-- io
@@ -184,6 +204,12 @@ local recast = {
 	end,
 	decreaseWalkableRadius = function()
 		walkableRadius = walkableRadius / 2
+	end,
+	--update
+	update = function(dt)
+		if rcCurve then
+			rcT = (rcT + 50 * dt / rcCurve.length) % 1
+		end
 	end
 }
 
