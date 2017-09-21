@@ -1,31 +1,10 @@
-#include "Recast.h"
-#include "RecastAlloc.h"
-#include "RecastAssert.h"
-
-#include "DetourAlloc.h"
-#include "DetourAssert.h"
-#include "DetourCommon.h"
-#include "DetourMath.h"
-#include "DetourNavMesh.h"
-#include "DetourNavMeshBuilder.h"
-#include "DetourNavMeshQuery.h"
-#include "DetourNode.h"
-#include "DetourStatus.h"
-
-#include <stdio.h>
-#include <string>
-#include <lua.hpp>
-#include <ctime>
-#include <cstdlib>
-
-#define WIDTH 800
-#define HEIGHT 600
+#include "recastlua.h"
 
 int *g_tris = NULL;
 unsigned char *g_flags = NULL;
 int g_ntris = 0;
 
-int setTris(lua_State *L) {
+static int setTris(lua_State *L) {
 	int n = lua_gettop(L);
 	if (n > g_ntris) {
 		g_tris = (int *)realloc((void *) g_tris, n * sizeof(int));
@@ -44,7 +23,7 @@ int setTris(lua_State *L) {
 	return 0;
 }
 
-int getNTris(lua_State *L) {
+static int getNTris(lua_State *L) {
 	if (lua_gettop(L)) {
 		lua_pushstring(L, "incorrect argument");
 		lua_error(L);
@@ -53,7 +32,7 @@ int getNTris(lua_State *L) {
 	return 1;
 }
 
-int getTris(lua_State *L) {
+static int getTris(lua_State *L) {
 	if (lua_gettop(L)) {
 		lua_pushstring(L, "incorrect argument");
 		lua_error(L);
@@ -68,7 +47,7 @@ int getTris(lua_State *L) {
 float *g_verts = NULL;
 int g_nverts = 0;
 
-int setVerts(lua_State *L) {
+static int setVerts(lua_State *L) {
 	int n = lua_gettop(L);
 	if (3 * n / 2 > g_nverts) {
 		g_verts = (float *)realloc((void *) g_verts, 3 * n * sizeof(float) / 2);
@@ -87,7 +66,7 @@ int setVerts(lua_State *L) {
 	return 0;
 }
 
-int getNVerts(lua_State *L) {
+static int getNVerts(lua_State *L) {
 	if (lua_gettop(L)) {
 		lua_pushstring(L, "incorrect argument");
 		lua_error(L);
@@ -96,7 +75,7 @@ int getNVerts(lua_State *L) {
 	return 1;
 }
 
-int getVerts(lua_State *L) {
+static int getVerts(lua_State *L) {
 	if (lua_gettop(L)) {
 		lua_pushstring(L, "incorrect argument");
 		lua_error(L);
@@ -115,6 +94,11 @@ dtNavMesh *navMesh;
 const float min[3] = {0.0, 0.0, 0.0};
 const float max[3] = {WIDTH, 2.0, HEIGHT};
 
+/* variable needed in lua :
+	- rcHeightfield;
+	- rcPolyMesh;
+*/
+
 static int setPolyMesh(lua_State *L) {
 	printf("\nsetPolyMesh :\n-------------\n");
 
@@ -130,7 +114,7 @@ static int setPolyMesh(lua_State *L) {
 	 * args[6]   : size of the cell on xz-plane
 	 * args[7]   : size of the cell on y-axis
 	 */
-	rcCreateHeightfield(ctx, *heightfield, WIDTH, HEIGHT, min, max, 5, 1);
+	rcCreateHeightfield(ctx, *heightfield, WIDTH, HEIGHT, min, max, 1, 1);
 
 	/* args[7] : the distance where the walkable flag is favored over the non-walkable flag. [Limit: >= 0] [Units: vx]
 	 */
@@ -142,6 +126,13 @@ static int setPolyMesh(lua_State *L) {
 	 */
 	if (!rcBuildCompactHeightfield(ctx, 3, 0, *heightfield, *compactHeightfield)) {
 		printf("error - build chf\n");
+		return 0;
+	}
+
+	// Erode the walkable area by agent radius.
+	if (!rcErodeWalkableArea(ctx, lua_tonumber(L, 1), *compactHeightfield))
+	{
+		printf("error - erode chf\n");
 		return 0;
 	}
 
@@ -164,7 +155,7 @@ static int setPolyMesh(lua_State *L) {
 	/* args[2] : maxError	The maximum distance a simplfied contour's border edges should deviate the original raw contour. [Limit: >=0] [Units: wu]
 	 * args[3] : maxEdgeLen	The maximum allowed length for contour edges along the border of the mesh. [Limit: >=0] [Units: vx]
 	 */
-	if(!rcBuildContours(ctx, *compactHeightfield, 1.0, 10, *contourSet, RC_CONTOUR_TESS_WALL_EDGES /*| RC_CONTOUR_TESS_AREA_EDGES*/)) {
+	if(!rcBuildContours(ctx, *compactHeightfield, 1.0, 0, *contourSet, RC_CONTOUR_TESS_WALL_EDGES /*| RC_CONTOUR_TESS_AREA_EDGES*/)) {
 		printf("error - build contours\n");
 		return 0;
 	}
@@ -213,10 +204,10 @@ static int setPolyMesh(lua_State *L) {
 static int setNavMesh(lua_State *L) {
 	printf("\nsetNavMesh :\n------------\n");
 
-	for (int i = 0; i < polyMesh->npolys; ++i)
-	{
-		polyMesh->flags[i] = 12;
-	}
+	// for (int i = 0; i < polyMesh->npolys; ++i)
+	// {
+	// 	polyMesh->flags[i] = 12;
+	// }
 
 	dtNavMeshCreateParams params;
 
@@ -230,7 +221,7 @@ static int setNavMesh(lua_State *L) {
 	params.polyCount = polyMesh->npolys;
 	params.nvp = polyMesh->nvp;
 	params.walkableHeight = 1;
-	params.walkableRadius = lua_tonumber(L, 1);
+	// params.walkableRadius = lua_tonumber(L, 1);
 	params.walkableClimb = 0;
 	params.cs = polyMesh->cs;
 	params.ch = polyMesh->ch;
@@ -253,10 +244,12 @@ static int setNavMesh(lua_State *L) {
 	printf(
 		"vertCount = %d\n"
 		"polyCount = %d\n"
-		"nvp = %d\n",
+		"nvp = %d\n"
+		"radius = %f\n",
 		params.vertCount,
 		params.polyCount,
-		params.nvp
+		params.nvp,
+		params.walkableRadius
 	);
 
 	unsigned char* navData = 0;
@@ -286,28 +279,28 @@ static int setNavMesh(lua_State *L) {
 
 	const dtNavMesh &mesh = *navMesh;
 
-	for (int i = 0; i < navMesh->getMaxTiles(); ++i)
-	{
-		const dtMeshTile* tile = mesh.getTile(i);
-		if (!tile->header) continue;
-		printf("tile->header->polyCount = %d\n", tile->header->polyCount);
-
-		const dtPolyRef base = navMesh->getPolyRefBase(tile);
-		for (int i = 0; i < tile->header->polyCount; ++i)
-		{
-		    const dtPoly* p = &tile->polys[i];
-		    // const dtPolyRef ref = base | (dtPolyRef)i;
-			printf("\n");
-			for (int j = 0; j < p->vertCount; ++j) {
-				printf("\tp->verts[i] = %.f %.f %.f\n",
-					tile->verts[p->verts[j] * 3 + 0],
-					tile->verts[p->verts[j] * 3 + 1],
-					tile->verts[p->verts[j] * 3 + 2]
-				);
-			}
-		    // Use the reference to access the polygon data.
-		}
-	}
+	// for (int i = 0; i < navMesh->getMaxTiles(); ++i)
+	// {
+	// 	const dtMeshTile* tile = mesh.getTile(i);
+	// 	if (!tile->header) continue;
+	// 	printf("tile->header->polyCount = %d\n", tile->header->polyCount);
+	//
+	// 	const dtPolyRef base = navMesh->getPolyRefBase(tile);
+	// 	for (int i = 0; i < tile->header->polyCount; ++i)
+	// 	{
+	// 	    const dtPoly* p = &tile->polys[i];
+	// 	    // const dtPolyRef ref = base | (dtPolyRef)i;
+	// 		printf("\n");
+	// 		for (int j = 0; j < p->vertCount; ++j) {
+	// 			printf("\tp->verts[i] = %.f %.f %.f\n",
+	// 				tile->verts[p->verts[j] * 3 + 0],
+	// 				tile->verts[p->verts[j] * 3 + 1],
+	// 				tile->verts[p->verts[j] * 3 + 2]
+	// 			);
+	// 		}
+	// 	    // Use the reference to access the polygon data.
+	// 	}
+	// }
 
 	return 0;
 }
@@ -319,6 +312,8 @@ float rand_01(){
 float rand_02(){
 	return 0.05;
 }
+
+int sCount;
 
 static int queryNavMesh(lua_State *L) {
 	printf("\nqueryNavMesh :\n--------------\n");
@@ -424,7 +419,33 @@ static int queryNavMesh(lua_State *L) {
 		lua_pushnumber(L, mesh.decodePolyIdPoly(path[i]));
 		printf("passing through %u\n", mesh.decodePolyIdPoly(path[i]));
 	}
-	return 5 + npoly;
+
+	//straightPath
+	float sPath[32];
+	unsigned char sFlags[32];
+	dtPolyRef sRefs[32];
+
+	if (dtStatusFailed(navMeshQuery->findStraightPath(
+		posStart,
+		posEnd,
+		path,
+		npoly,
+		sPath,
+		sFlags,
+		sRefs,
+		&sCount,
+		32
+	))) {
+		printf("FAILED\n");
+	};
+
+	for (int i = 0; i < sCount; ++i) {
+		lua_pushnumber(L, sPath[i * 3 + 0]);
+		lua_pushnumber(L, sPath[i * 3 + 2]);
+		printf("straightPath %.1f, %.1f, %.1f\n", sPath[i * 3 + 0], sPath[i * 3 + 1], sPath[i * 3 + 2]);
+	}
+
+	return 5 + npoly + 2 * sCount;
 }
 
 static int getRcVerts(lua_State *L) {
@@ -450,26 +471,37 @@ static int getRcNVP(lua_State *L) {
 	return 1;
 }
 
-extern "C" {
-	int luaopen_module(lua_State *L) {
-		lua_register(L, "setTris", setTris);
-		lua_register(L, "getTris", getTris);
-		lua_register(L, "getNTris", getNTris);
+static int getRcSCount(lua_State *L) {
+	lua_pushnumber(L, sCount);
+	return 1;
+}
 
-		lua_register(L, "setVerts", setVerts);
-		lua_register(L, "getVerts", getVerts);
-		lua_register(L, "getNVerts", getNVerts);
+extern "C" int luaopen_recastlua(lua_State *L) {
+	luaL_Reg reg[] = {
+		{"setTris", setTris},
+		{"getTris", getTris},
+		{"getNTris", getNTris},
 
-		lua_register(L, "setPolyMesh", setPolyMesh);
+		{"setVerts", setVerts},
+		{"getVerts", getVerts},
+		{"getNVerts", getNVerts},
 
-		lua_register(L, "getRcVerts", getRcVerts);
-		lua_register(L, "getRcPolys", getRcPolys);
-		lua_register(L, "getRcNVP", getRcNVP);
+		{"setPolyMesh", setPolyMesh},
 
-		lua_register(L, "setNavMesh", setNavMesh);
+		{"getRcVerts", getRcVerts},
+		{"getRcPolys", getRcPolys},
+		{"getRcNVP", getRcNVP},
+		{"getRcSCount", getRcSCount},
 
-		lua_register(L, "queryNavMesh", queryNavMesh);
+		{"setNavMesh", setNavMesh},
 
-		return 1;
-	}
+		{"queryNavMesh", queryNavMesh},
+
+		{NULL, NULL}
+	};
+
+	lua_newtable(L);
+	luaL_register(L, NULL, reg);
+
+	return 1;
 }

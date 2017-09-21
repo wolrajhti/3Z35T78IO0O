@@ -1,4 +1,25 @@
-require('recastlua_cmod')
+local recastlua = require('recastlua')
+-- local Hero = require('hero')
+-- local SuperHero = require('superHero')
+local rcContext = require('wrap_rcContext')
+local rcPolyMesh = require('wrap_rcPolyMesh')
+local rcHeightfield = require('wrap_rcHeightfield')
+local Vector3f = require('vector3f')
+
+-- local hero = Hero(300, 400)
+-- print(hero.getX(hero), hero.getY(hero), hero.getPosition(hero))
+-- print(hero:getX())
+--
+-- local superHero = SuperHero(200, 450)
+-- print(superHero.getX(superHero), superHero.getY(superHero), superHero.getPosition(superHero))
+-- print(superHero:getX())
+
+local context = rcContext()
+local min = Vector3f(0, 0, 0)
+local max = Vector3f(800, 0, 600)
+local heightfield = rcHeightfield(context, 800, 600, min, max, 1, 1)
+
+
 
 local currentVertices = {}
 
@@ -50,22 +71,22 @@ local recast = {
 	end,
 	-- io recast
 	setVertices = function()
-		setVerts(unpack(vertices))
+		recastlua.setVerts(unpack(vertices))
 	end,
 	setTriangles = function()
 		local tm = imap(triangles, function(i, t) return t - 1 end)
-		setTris(unpack(tm))
+		recastlua.setTris(unpack(tm))
 	end,
 	setPolyMesh = function(self)
 		if rcWalkableRadius == -1 then
 			self.setVertices()
 			self.setTriangles()
 		end
-		setPolyMesh(walkableRadius)
+		recastlua.setPolyMesh(walkableRadius)
 
-		local nvp = getRcNVP()
-		local vertices = {getRcVerts()}
-		local rawPolys = {getRcPolys()}
+		local nvp = recastlua.getRcNVP()
+		local vertices = {recastlua.getRcVerts()}
+		local rawPolys = {recastlua.getRcPolys()}
 
 		rcPolys = {}
 		-- rcCenters = {}
@@ -89,7 +110,7 @@ local recast = {
 		end
 	end,
 	setNavMesh = function()
-		setNavMesh()
+		recastlua.setNavMesh()
 	end,
 	setStart = function(x, y)
 		rcSx, rcSy = x, y
@@ -99,14 +120,14 @@ local recast = {
 	end,
 	--queryPath
 	setPath = function()
-		local data = {queryNavMesh(rcSx, rcSy, rcEx, rcEy)}
-		local sCount = getRcSCount()
+		local data = {recastlua.queryNavMesh(rcSx, rcSy, rcEx, rcEy)}
+		local sCount = recastlua.getRcSCount()
 		rcSx, rcSy = data[1], data[2]
 		rcEx, rcEy = data[3], data[4]
 		rcThrough = {}
 		rcPath = {}
 		rcSPath = {}
-		rcCurve = {}
+		rcCurve = nil
 		for i = 6, #data - 2 * sCount do
 			rcThrough[data[i] + 1] = true
 			table.insert(rcPath, data[i] + 1)
@@ -118,7 +139,9 @@ local recast = {
 		for i = #data - 2 * sCount + 1, #data, 2 do
 			table.insert(verts, Vector(data[i + 0], data[i + 1]))
 		end
-		rcCurve = Curve(verts)
+		if #verts then
+			rcCurve = Curve(verts)
+		end
 		rcT = 0
 	end,
 	-- graphics
@@ -210,6 +233,11 @@ local recast = {
 		if rcCurve then
 			rcT = (rcT + 50 * dt / rcCurve.length) % 1
 		end
+	end,
+	--export
+	export = function()
+		local tm = imap(triangles, function(i, t) return vertices[t]..'\n' end)
+		print(unpack(tm))
 	end
 }
 
