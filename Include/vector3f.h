@@ -3,6 +3,7 @@
 
 # include <lua.hpp>
 # include <cstddef>
+# include <cstdio>
 
 # define LUA_META_VECTOR3F "Vector3f"
 
@@ -18,7 +19,7 @@ private:
 	float m_x, m_y, m_z;
 };
 
-static int vector3f_new(lua_State *L);
+/*static*/ int vector3f_new(lua_State *L);
 static int vector3f_getX(lua_State *L);
 static int vector3f_getY(lua_State *L);
 static int vector3f_getZ(lua_State *L);

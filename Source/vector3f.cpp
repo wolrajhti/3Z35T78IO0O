@@ -6,10 +6,10 @@ Vector3f::Vector3f(float x, float y, float z) {
 	m_z = z;
 }
 
-static int vector3f_new(lua_State *L) {
-	int x = luaL_checkint(L, -3);
-	int y = luaL_checkint(L, -2);
-	int z = luaL_checkint(L, -1);
+/*static*/ int vector3f_new(lua_State *L) {
+	float x = (float)luaL_checknumber(L, -3);
+	float y = (float)luaL_checknumber(L, -2);
+	float z = (float)luaL_checknumber(L, -1);
 
 	*static_cast<Vector3f**>(lua_newuserdata(L, sizeof(Vector3f*))) = new Vector3f(x, y, z);
 
@@ -36,7 +36,7 @@ float Vector3f::getX() {
 }
 
 static int vector3f_getX(lua_State *L) {
-	static Vector3f *v3f = *static_cast<Vector3f**>(luaL_checkudata(L, 1, LUA_META_VECTOR3F));
+	Vector3f *v3f = *static_cast<Vector3f**>(luaL_checkudata(L, 1, LUA_META_VECTOR3F));
 	lua_pushnumber(L, v3f->getX());
 	return 1;
 }
@@ -46,7 +46,7 @@ float Vector3f::getY() {
 }
 
 static int vector3f_getY(lua_State *L) {
-	static Vector3f *v3f = *static_cast<Vector3f**>(luaL_checkudata(L, 1, LUA_META_VECTOR3F));
+	Vector3f *v3f = *static_cast<Vector3f**>(luaL_checkudata(L, 1, LUA_META_VECTOR3F));
 	lua_pushnumber(L, v3f->getY());
 	return 1;
 }
@@ -56,13 +56,13 @@ float Vector3f::getZ() {
 }
 
 static int vector3f_getZ(lua_State *L) {
-	static Vector3f *v3f = *static_cast<Vector3f**>(luaL_checkudata(L, 1, LUA_META_VECTOR3F));
+	Vector3f *v3f = *static_cast<Vector3f**>(luaL_checkudata(L, 1, LUA_META_VECTOR3F));
 	lua_pushnumber(L, v3f->getZ());
 	return 1;
 }
 
 static int vector3f_getPosition(lua_State *L) {
-	static Vector3f *v3f = *static_cast<Vector3f**>(luaL_checkudata(L, 1, LUA_META_VECTOR3F));
+	Vector3f *v3f = *static_cast<Vector3f**>(luaL_checkudata(L, 1, LUA_META_VECTOR3F));
 	lua_pushnumber(L, v3f->getX());
 	lua_pushnumber(L, v3f->getY());
 	lua_pushnumber(L, v3f->getZ());
@@ -76,7 +76,8 @@ void Vector3f::toArray(float array[3]) {
 }
 
 static int vector3f_free(lua_State *L) {
-	static Vector3f *v3f = *static_cast<Vector3f**>(luaL_checkudata(L, 1, LUA_META_VECTOR3F));
+	printf("vector3f_free\n");
+	Vector3f *v3f = *static_cast<Vector3f**>(luaL_checkudata(L, 1, LUA_META_VECTOR3F));
 	delete v3f;
 	return 0;
 }

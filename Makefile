@@ -17,3 +17,10 @@ all:
 											./Source/wrap_rcHeightfield.cpp -I./Include $(INC_RECAST) $(SRC_RECAST) \
 												./Source/wrap_rcContext.cpp \
 												./Source/vector3f.cpp
+	cc -bundle -undefined dynamic_lookup -o ./SharedLibrary/wrap_rcCompactHeightfield.so \
+											./Source/wrap_rcCompactHeightfield.cpp -I./Include $(INC_RECAST) $(SRC_RECAST) \
+												./Source/wrap_rcContext.cpp \
+												./Source/wrap_rcHeightfield.cpp
+
+lua:
+	cc -bundle -undefined dynamic_lookup -o ./SharedLibrary/test.so ./Source/wrap_*.cpp ./Source/test.cpp ./Source/vector3f.cpp -I./Include $(INC_RECAST) $(SRC_RECAST)

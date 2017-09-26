@@ -1,10 +1,26 @@
 local recastlua = require('recastlua')
+
 -- local Hero = require('hero')
 -- local SuperHero = require('superHero')
-local rcContext = require('wrap_rcContext')
-local rcPolyMesh = require('wrap_rcPolyMesh')
-local rcHeightfield = require('wrap_rcHeightfield')
-local Vector3f = require('vector3f')
+
+local test = require('test')
+--
+-- print(test)
+-- print(test.yolo)
+--
+-- -- local rcContext = require('wrap_rcContext')
+-- -- local rcPolyMesh = require('wrap_rcPolyMesh')
+-- -- local rcHeightfield = require('wrap_rcHeightfield')
+-- -- local rcCompactHeightfield = require('wrap_rcCompactHeightfield')
+-- -- local Vector3f = require('vector3f')
+--
+local rcContext = test.rcContext
+local rcHeightfield = test.rcHeightfield
+local rcCompactHeightfield = test.rcCompactHeightfield
+local rcContourSet = test.rcContourSet
+local rcPolyMesh = test.rcPolyMesh
+local dtNavMesh = test.dtNavMesh
+local Vector3f = test.vector3f
 
 -- local hero = Hero(300, 400)
 -- print(hero.getX(hero), hero.getY(hero), hero.getPosition(hero))
@@ -13,11 +29,87 @@ local Vector3f = require('vector3f')
 -- local superHero = SuperHero(200, 450)
 -- print(superHero.getX(superHero), superHero.getY(superHero), superHero.getPosition(superHero))
 -- print(superHero:getX())
-
+--
 local context = rcContext()
 local min = Vector3f(0, 0, 0)
-local max = Vector3f(800, 0, 600)
+local max = Vector3f(800, 2, 600)
+-- print(min:getX(), max:getX())
 local heightfield = rcHeightfield(context, 800, 600, min, max, 1, 1)
+
+heightfield:rcRasterizeTriangle(
+	context,
+	Vector3f(0, 0, 0),
+	Vector3f(400, 0, 0),
+	Vector3f(400, 0, 300)
+)
+
+heightfield:rcRasterizeTriangle(
+	context,
+	Vector3f(0, 0, 0),
+	Vector3f(400, 0, 300),
+	Vector3f(0, 0, 300)
+)
+
+heightfield:rcRasterizeTriangle(
+	context,
+	Vector3f(100, 0, 100),
+	Vector3f(200, 0, 100),
+	Vector3f(200, 0, 500)
+)
+
+heightfield:rcRasterizeTriangle(
+	context,
+	Vector3f(100, 0, 100),
+	Vector3f(200, 0, 500),
+	Vector3f(100, 0, 500)
+)
+
+-- heightfield:printSpans()
+
+local compactHeightfield = rcCompactHeightfield(context, 3, 0, heightfield)
+
+compactHeightfield:rcErodeWalkableArea(context, 20)
+compactHeightfield:rcBuildDistanceField(context)
+compactHeightfield:rcBuildRegions(context)
+
+local contourSet = rcContourSet(context, compactHeightfield, 5, 50)
+
+local polyMesh = rcPolyMesh(context, contourSet)
+
+-- DEBUG DEBUG
+-- DEBUG DEBUG
+local rawVerts = {polyMesh:getVerts()}
+local rawPolys = {polyMesh:getPolys()}
+local nvp = polyMesh:getNvp()
+local rcPolys = {}
+
+for i = 1, #rawPolys, nvp do
+	local poly = {}
+	for j = 0, nvp - 1 do
+		if rawPolys[i + j] == 65536 then break end
+		table.insert(poly, rawVerts[rawPolys[i + j] * 2 - 1])
+		table.insert(poly, rawVerts[rawPolys[i + j] * 2 + 0])
+	end
+	print('poly', unpack(poly))
+	table.insert(rcPolys, poly)
+end
+
+-- DEBUG DEBUG
+-- DEBUG DEBUG
+
+
+local navMesh = dtNavMesh(polyMesh)
+
+local rcSx, rcSy, rcEx, rcEy = 300, 100, 100, 200
+
+local path = {navMesh:findPath(Vector3f(rcSx, 0, rcSy), Vector3f(rcEx, 0, rcEy))}
+
+print('path', unpack(path))
+
+-- local corridor1 = dtPathCorridor(dtNavMesh)
+-- local corridor2 = dtPathCorridor(dtNavMesh)
+-- local corridor3 = dtPathCorridor(dtNavMesh)
+-- local corridor4 = dtPathCorridor(dtNavMesh)
 
 
 
@@ -28,10 +120,10 @@ local triangles = {}
 local index = {}
 local walkableRadius = 5
 
-local rcPolys = {}
+-- local rcPolys = {}
 -- local rcCenters = {}
 local rcWalkableRadius = -1
-local rcSx, rcSy, rcEx, rcEy = nil, nil, nil, nil
+-- local rcSx, rcSy, rcEx, rcEy = nil, nil, nil, nil
 local rcThrough = {}
 local rcPath = {}
 local rcSPath = {}

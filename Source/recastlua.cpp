@@ -277,7 +277,7 @@ static int setNavMesh(lua_State *L) {
 
 	printf("getMaxTile = %d\n", navMesh->getMaxTiles());
 
-	const dtNavMesh &mesh = *navMesh;
+	// const dtNavMesh &mesh = *navMesh;
 
 	// for (int i = 0; i < navMesh->getMaxTiles(); ++i)
 	// {
