@@ -1,5 +1,5 @@
-#ifndef TEST_H
-# define TEST_H
+#ifndef RL_H
+# define RL_H
 
 # include <lua.hpp>
 # include <cstddef>
@@ -11,7 +11,10 @@
 # include "wrap_rcContourSet.h"
 # include "wrap_rcPolyMesh.h"
 # include "wrap_dtNavMesh.h"
+# include "wrap_dtNavMeshQuery.h"
+# include "wrap_dtPathCorridor.h"
 
 # include "vector3f.h"
+# include "path.h"
 
 #endif

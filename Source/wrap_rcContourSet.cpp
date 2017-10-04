@@ -33,7 +33,7 @@
 }
 
 static int wrap_rcContourSet_free(lua_State *L) {
-	printf("wrap_rcContourSet_free\n");
+	// printf("wrap_rcContourSet_free\n");
 	rcContourSet *contourSet = *static_cast<rcContourSet**>(luaL_checkudata(L, 1, LUA_META_WRAP_RCCONTOURSET));
 	rcFreeContourSet(contourSet);
 	return 0;

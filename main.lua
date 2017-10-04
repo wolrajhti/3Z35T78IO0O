@@ -25,6 +25,7 @@ function love.draw()
 	recast.drawRCPath()
 	recast.drawRCSPath()
 	recast.drawStartEnd()
+	recast.drawCorridorCorners()
 end
 
 function love.mousepressed(x, y, button)

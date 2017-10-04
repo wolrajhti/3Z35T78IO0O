@@ -4,20 +4,9 @@
 # include <lua.hpp>
 # include <cstddef>
 # include <cstdio>
+# include <stdlib.h>
 
 # define LUA_META_VECTOR3F "Vector3f"
-
-class Vector3f
-{
-public:
-	Vector3f(float x, float y, float z);
-	float getX();
-	float getY();
-	float getZ();
-	void toArray(float array[3]);
-private:
-	float m_x, m_y, m_z;
-};
 
 /*static*/ int vector3f_new(lua_State *L);
 static int vector3f_getX(lua_State *L);

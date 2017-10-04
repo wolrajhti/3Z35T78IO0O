@@ -28,6 +28,11 @@
 		return 0;
 	}
 
+	for (int i = 0; i < polyMesh->npolys; ++i){
+		// printf("polyMesh->flags[%d] = %hu\n", i, polyMesh->flags[i]);
+		polyMesh->flags[i] = 12;
+	}
+
 	return 1;
 }
 
@@ -63,7 +68,7 @@ static int getNvp(lua_State *L) {
 }
 
 static int wrap_rcPolyMesh_free(lua_State *L) {
-	printf("wrap_rcPolyMesh_free\n");
+	// printf("wrap_rcPolyMesh_free\n");
 	rcPolyMesh *polyMesh = *static_cast<rcPolyMesh**>(luaL_checkudata(L, 1, LUA_META_WRAP_RCPOLYMESH));
 	rcFreePolyMesh(polyMesh);
 	return 0;

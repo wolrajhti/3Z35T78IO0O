@@ -6,13 +6,8 @@
 	int width = luaL_checkint(L, 2);
 	int height = luaL_checkint(L, 3);
 
-	Vector3f *vMin = *static_cast<Vector3f**>(luaL_checkudata(L, 4, LUA_META_VECTOR3F));
-	Vector3f *vMax = *static_cast<Vector3f**>(luaL_checkudata(L, 5, LUA_META_VECTOR3F));
-
-	float min[3], max[3];
-
-	vMin->toArray(min);
-	vMax->toArray(max);
+	float *min = *static_cast<float**>(luaL_checkudata(L, 4, LUA_META_VECTOR3F));
+	float *max = *static_cast<float**>(luaL_checkudata(L, 5, LUA_META_VECTOR3F));
 
 	float cs = luaL_checknumber(L, 6);
 	float ch = luaL_checknumber(L, 7);
@@ -44,15 +39,9 @@ static int wrap_rcRasterizeTriangle(lua_State *L) {
 	rcHeightfield *heightfield = *static_cast<rcHeightfield**>(luaL_checkudata(L, 1, LUA_META_WRAP_RCHEIGHTFIELD));
 	rcContext *context = *static_cast<rcContext**>(luaL_checkudata(L, 2, LUA_META_WRAP_RCCONTEXT));
 
-	Vector3f *vec0 = *static_cast<Vector3f**>(luaL_checkudata(L, 3, LUA_META_VECTOR3F));
-	Vector3f *vec1 = *static_cast<Vector3f**>(luaL_checkudata(L, 4, LUA_META_VECTOR3F));
-	Vector3f *vec2 = *static_cast<Vector3f**>(luaL_checkudata(L, 5, LUA_META_VECTOR3F));
-
-	float v0[3], v1[3], v2[3];
-
-	vec0->toArray(v0);
-	vec1->toArray(v1);
-	vec2->toArray(v2);
+	float *v0 = *static_cast<float**>(luaL_checkudata(L, 3, LUA_META_VECTOR3F));
+	float *v1 = *static_cast<float**>(luaL_checkudata(L, 4, LUA_META_VECTOR3F));
+	float *v2 = *static_cast<float**>(luaL_checkudata(L, 5, LUA_META_VECTOR3F));
 
 	rcRasterizeTriangle(context, v0, v1, v2, RC_WALKABLE_AREA, *heightfield, 0);
 
@@ -94,7 +83,7 @@ static int printSpans(lua_State *L) {
 }
 
 static int wrap_rcHeightfield_free(lua_State *L) {
-	printf("wrap_rcHeightfield_free\n");
+	// printf("wrap_rcHeightfield_free\n");
 	rcHeightfield *heightfield = *static_cast<rcHeightfield**>(luaL_checkudata(L, 1, LUA_META_WRAP_RCHEIGHTFIELD));
 	rcFreeHeightField(heightfield);
 	return 0;

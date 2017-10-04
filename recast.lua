@@ -1,83 +1,70 @@
 local recastlua = require('recastlua')
 
--- local Hero = require('hero')
--- local SuperHero = require('superHero')
+local rl = require('rl')
 
-local test = require('test')
---
--- print(test)
--- print(test.yolo)
---
--- -- local rcContext = require('wrap_rcContext')
--- -- local rcPolyMesh = require('wrap_rcPolyMesh')
--- -- local rcHeightfield = require('wrap_rcHeightfield')
--- -- local rcCompactHeightfield = require('wrap_rcCompactHeightfield')
--- -- local Vector3f = require('vector3f')
---
-local rcContext = test.rcContext
-local rcHeightfield = test.rcHeightfield
-local rcCompactHeightfield = test.rcCompactHeightfield
-local rcContourSet = test.rcContourSet
-local rcPolyMesh = test.rcPolyMesh
-local dtNavMesh = test.dtNavMesh
-local Vector3f = test.vector3f
+local context = rl.newRcContext()
 
--- local hero = Hero(300, 400)
--- print(hero.getX(hero), hero.getY(hero), hero.getPosition(hero))
--- print(hero:getX())
---
--- local superHero = SuperHero(200, 450)
--- print(superHero.getX(superHero), superHero.getY(superHero), superHero.getPosition(superHero))
--- print(superHero:getX())
---
-local context = rcContext()
-local min = Vector3f(0, 0, 0)
-local max = Vector3f(800, 2, 600)
--- print(min:getX(), max:getX())
-local heightfield = rcHeightfield(context, 800, 600, min, max, 1, 1)
+local min = rl.newVector3f(0, 0, 0)
+local max = rl.newVector3f(800, 2, 600)
+
+local heightfield = rl.newRcHeightfield(context, 800, 600, min, max, 1, 1)
 
 heightfield:rcRasterizeTriangle(
 	context,
-	Vector3f(0, 0, 0),
-	Vector3f(400, 0, 0),
-	Vector3f(400, 0, 300)
+	rl.newVector3f(0, 0, 0),
+	rl.newVector3f(400, 0, 0),
+	rl.newVector3f(400, 0, 300)
 )
 
 heightfield:rcRasterizeTriangle(
 	context,
-	Vector3f(0, 0, 0),
-	Vector3f(400, 0, 300),
-	Vector3f(0, 0, 300)
+	rl.newVector3f(0, 0, 0),
+	rl.newVector3f(400, 0, 300),
+	rl.newVector3f(0, 0, 300)
 )
 
 heightfield:rcRasterizeTriangle(
 	context,
-	Vector3f(100, 0, 100),
-	Vector3f(200, 0, 100),
-	Vector3f(200, 0, 500)
+	rl.newVector3f(100, 0, 100),
+	rl.newVector3f(200, 0, 100),
+	rl.newVector3f(200, 0, 500)
 )
 
 heightfield:rcRasterizeTriangle(
 	context,
-	Vector3f(100, 0, 100),
-	Vector3f(200, 0, 500),
-	Vector3f(100, 0, 500)
+	rl.newVector3f(100, 0, 100),
+	rl.newVector3f(200, 0, 500),
+	rl.newVector3f(100, 0, 500)
+)
+
+heightfield:rcRasterizeTriangle(
+	context,
+	rl.newVector3f(50, 0, 400),
+	rl.newVector3f(400, 0, 400),
+	rl.newVector3f(400, 0, 450)
+)
+
+heightfield:rcRasterizeTriangle(
+	context,
+	rl.newVector3f(50, 0, 400),
+	rl.newVector3f(400, 0, 450),
+	rl.newVector3f(50, 0, 450)
 )
 
 -- heightfield:printSpans()
 
-local compactHeightfield = rcCompactHeightfield(context, 3, 0, heightfield)
+local compactHeightfield = rl.newRcCompactHeightfield(context, 3, 0, heightfield)
 
 compactHeightfield:rcErodeWalkableArea(context, 20)
 compactHeightfield:rcBuildDistanceField(context)
 compactHeightfield:rcBuildRegions(context)
 
-local contourSet = rcContourSet(context, compactHeightfield, 5, 50)
+local contourSet = rl.newRcContourSet(context, compactHeightfield, 5, 50)
 
-local polyMesh = rcPolyMesh(context, contourSet)
+local polyMesh = rl.newRcPolyMesh(context, contourSet)
 
--- DEBUG DEBUG
--- DEBUG DEBUG
+local path = rl.newPath(32)
+
 local rawVerts = {polyMesh:getVerts()}
 local rawPolys = {polyMesh:getPolys()}
 local nvp = polyMesh:getNvp()
@@ -90,28 +77,41 @@ for i = 1, #rawPolys, nvp do
 		table.insert(poly, rawVerts[rawPolys[i + j] * 2 - 1])
 		table.insert(poly, rawVerts[rawPolys[i + j] * 2 + 0])
 	end
-	print('poly', unpack(poly))
+	-- print('poly', unpack(poly))
 	table.insert(rcPolys, poly)
 end
 
--- DEBUG DEBUG
--- DEBUG DEBUG
+local navMesh = rl.newDtNavMesh(polyMesh)
 
+local navMeshQuery = rl.newDtNavMeshQuery(navMesh)
 
-local navMesh = dtNavMesh(polyMesh)
+local rcSx, rcSy, rcEx, rcEy = 320, 80, 75, 425
 
-local rcSx, rcSy, rcEx, rcEy = 300, 100, 100, 200
+local vS = rl.newVector3f(rcSx, 0, rcSy)
+local vE = rl.newVector3f(rcEx, 0, rcEy)
 
-local path = {navMesh:findPath(Vector3f(rcSx, 0, rcSy), Vector3f(rcEx, 0, rcEy))}
+local pS = navMeshQuery:findNearestPoly(vS, navMesh)
+local pE = navMeshQuery:findNearestPoly(vE, navMesh)
 
-print('path', unpack(path))
+local npath, path = navMeshQuery:findPath(vS, vE, pS, pE)
 
--- local corridor1 = dtPathCorridor(dtNavMesh)
--- local corridor2 = dtPathCorridor(dtNavMesh)
--- local corridor3 = dtPathCorridor(dtNavMesh)
--- local corridor4 = dtPathCorridor(dtNavMesh)
+print('FROM LUA npath', npath)
 
+print('FROM LUA vS', vS:getX(), vS:getY(), vS:getZ())
 
+local pathCorridor = rl.newDtPathCorridor()
+
+pathCorridor:reset(pS, vS, navMesh)
+
+pathCorridor:setCorridor(vE, path, npath, navMesh, navMeshQuery)
+
+local corridorCorners = pathCorridor:findCorners(navMeshQuery)
+
+-- print('corridorCorners', corridorCorners)
+--
+-- for k, v in ipairs(corridorCorners) do
+-- 	print(k, v)
+-- end
 
 local currentVertices = {}
 
@@ -311,6 +311,12 @@ local recast = {
 				love.graphics.setColor(200, 0, 0)
 				love.graphics.circle('fill', rcEx, rcEy, rcWalkableRadius)
 			end
+		end
+	end,
+	drawCorridorCorners = function()
+		if corridorCorners then
+			love.graphics.setColor(200, 200, 0)
+			love.graphics.line(corridorCorners)
 		end
 	end,
 	-- io

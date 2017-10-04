@@ -11,6 +11,7 @@ static int setTris(lua_State *L) {
 		g_flags = (unsigned char *)realloc((void *) g_flags, n * sizeof(unsigned char));
 	}
 	int i;
+	// printf("RC_WALKABLE_AREA = %hhu\n", RC_WALKABLE_AREA);
 	for (i = 1; i <= n; ++i) {
 	  if (!lua_isnumber(L, i)) {
 		lua_pushstring(L, "incorrect argument");
@@ -375,6 +376,8 @@ static int queryNavMesh(lua_State *L) {
 
 	printf("start %.3f %.3f %.3f \n", posStart[0], posStart[1], posStart[2]);
 	printf("end   %.3f %.3f %.3f \n", posEnd[0], posEnd[1], posEnd[2]);
+	printf("start2 %.3f %.3f %.3f \n", posStart2[0], posStart2[1], posStart2[2]);
+	printf("end2   %.3f %.3f %.3f \n", posEnd2[0], posEnd2[1], posEnd2[2]);
 
 	if (navMesh->isValidPolyRef(*polyStart)) {
 		printf("Valid start.\n");
