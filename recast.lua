@@ -63,8 +63,6 @@ local contourSet = rl.newRcContourSet(context, compactHeightfield, 5, 50)
 
 local polyMesh = rl.newRcPolyMesh(context, contourSet)
 
-local path = rl.newPath(32)
-
 local rawVerts = {polyMesh:getVerts()}
 local rawPolys = {polyMesh:getPolys()}
 local nvp = polyMesh:getNvp()
@@ -87,8 +85,8 @@ local navMeshQuery = rl.newDtNavMeshQuery(navMesh)
 
 local rcSx, rcSy, rcEx, rcEy = 320, 80, 75, 425
 
-local vS = rl.newVector3f(rcSx, 0, rcSy)
-local vE = rl.newVector3f(rcEx, 0, rcEy)
+vS = rl.newVector3f(rcSx, 0, rcSy)
+vE = rl.newVector3f(rcEx, 0, rcEy)
 
 local pS = navMeshQuery:findNearestPoly(vS, navMesh)
 local pE = navMeshQuery:findNearestPoly(vE, navMesh)
@@ -106,6 +104,9 @@ pathCorridor:reset(pS, vS, navMesh)
 pathCorridor:setCorridor(vE, path, npath, navMesh, navMeshQuery)
 
 local corridorCorners = pathCorridor:findCorners(navMeshQuery)
+
+local movePos = rl.newVector3f(0, 0, 0)
+local moveTargetPos = rl.newVector3f(0, 0, 0)
 
 -- print('corridorCorners', corridorCorners)
 --
@@ -314,7 +315,7 @@ local recast = {
 		end
 	end,
 	drawCorridorCorners = function()
-		if corridorCorners then
+		if corridorCorners and #corridorCorners > 3 then
 			love.graphics.setColor(200, 200, 0)
 			love.graphics.line(corridorCorners)
 		end
@@ -325,6 +326,33 @@ local recast = {
 	end,
 	decreaseWalkableRadius = function()
 		walkableRadius = walkableRadius / 2
+	end,
+	movePosition = function(dx, dy)
+		rcSx, rcSy = rcSx + dx, rcSy + dy
+		movePos:setX(rcSx)
+		movePos:setY(0)
+		movePos:setZ(rcSy)
+
+		return pathCorridor:movePosition(movePos, navMeshQuery)
+	end,
+	moveTargetPosition = function(dx, dy)
+		rcEx, rcEy = rcEx + dx, rcEy + dy
+		moveTargetPos:setX(rcEx)
+		moveTargetPos:setY(0)
+		moveTargetPos:setZ(rcEy)
+
+		return pathCorridor:moveTargetPosition(moveTargetPos, navMeshQuery)
+	end,
+	findCorners = function()
+		corridorCorners = pathCorridor:findCorners(navMeshQuery)
+	end,
+	updatePos = function(self, dt)
+		local pos = Vector(rcSx, rcSy)
+		local tar = Vector(corridorCorners[3], corridorCorners[4])
+
+		local dPos = (tar - pos):normalize():mul(100 * dt)
+
+		return self.movePosition(dPos.x, dPos.y)
 	end,
 	--update
 	update = function(dt)
@@ -338,5 +366,23 @@ local recast = {
 		print(unpack(tm))
 	end
 }
+
+recast.context = context
+recast.min = min
+recast.max = max
+recast.heightfield = heightfield
+recast.compactHeightfield = compactHeightfield
+recast.contourSet = contourSet
+recast.polyMesh = polyMesh
+recast.path = path
+recast.navMesh = navMesh
+recast.navMeshQuery = navMeshQuery
+recast.vS = vS
+recast.vE = vE
+recast.pS = pS
+recast.pE = pE
+recast.pathCorridor = pathCorridor
+recast.movePos = movePos
+recast.moveTargetPos = moveTargetPos
 
 return recast

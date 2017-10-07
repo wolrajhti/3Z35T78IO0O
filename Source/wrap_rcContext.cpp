@@ -18,7 +18,7 @@
 }
 
 static int wrap_rcContext_free(lua_State *L) {
-	// printf("wrap_rcContext_free\n");
+	printf("wrap_rcContext_free\n");
 	rcContext *context = *static_cast<rcContext**>(luaL_checkudata(L, 1, LUA_META_WRAP_RCCONTEXT));
 	delete context;
 	return 0;

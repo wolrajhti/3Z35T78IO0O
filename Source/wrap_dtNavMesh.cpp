@@ -59,7 +59,7 @@
 }
 
 static int wrap_dtNavMesh_free(lua_State *L) {
-	// printf("wrap_dtNavMesh_free\n");
+	printf("wrap_dtNavMesh_free\n");
 	dtNavMesh *navMesh = *static_cast<dtNavMesh**>(luaL_checkudata(L, 1, LUA_META_WRAP_DTNAVMESH));
 	delete navMesh;
 	return 0;

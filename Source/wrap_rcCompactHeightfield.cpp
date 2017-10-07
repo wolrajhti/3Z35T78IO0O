@@ -66,7 +66,7 @@ static int wrap_rcBuildRegions(lua_State *L) {
 }
 
 static int wrap_rcCompactHeightfield_free(lua_State *L) {
-	// printf("wrap_rcCompactHeightfield_free\n");
+	printf("wrap_rcCompactHeightfield_free\n");
 	rcCompactHeightfield *compactHeightfield = *static_cast<rcCompactHeightfield**>(luaL_checkudata(L, 1, LUA_META_WRAP_RCCOMPACTHEIGHTFIELD));
 	rcFreeCompactHeightfield(compactHeightfield);
 	return 0;

@@ -12,6 +12,9 @@
 static int vector3f_getX(lua_State *L);
 static int vector3f_getY(lua_State *L);
 static int vector3f_getZ(lua_State *L);
+static int vector3f_setX(lua_State *L);
+static int vector3f_setY(lua_State *L);
+static int vector3f_setZ(lua_State *L);
 static int vector3f_getPosition(lua_State *L);
 static int vector3f_free(lua_State *L);
 

@@ -14,6 +14,9 @@ int vector3f_new(lua_State *L) {
 			{"getX", vector3f_getX},
 			{"getY", vector3f_getY},
 			{"getZ", vector3f_getZ},
+			{"setX", vector3f_setX},
+			{"setY", vector3f_setY},
+			{"setZ", vector3f_setZ},
 			{"getPosition", vector3f_getPosition},
 			{"__gc", vector3f_free},
 			{nullptr, nullptr}
@@ -51,6 +54,27 @@ static int vector3f_getZ(lua_State *L) {
 	return 1;
 }
 
+static int vector3f_setX(lua_State *L) {
+	float *v3f = *static_cast<float**>(luaL_checkudata(L, 1, LUA_META_VECTOR3F));
+	float x = (float)luaL_checknumber(L, -1);
+	v3f[0] = x;
+	return 0;
+}
+
+static int vector3f_setY(lua_State *L) {
+	float *v3f = *static_cast<float**>(luaL_checkudata(L, 1, LUA_META_VECTOR3F));
+	float y = (float)luaL_checknumber(L, -1);
+	v3f[1] = y;
+	return 0;
+}
+
+static int vector3f_setZ(lua_State *L) {
+	float *v3f = *static_cast<float**>(luaL_checkudata(L, 1, LUA_META_VECTOR3F));
+	float z = (float)luaL_checknumber(L, -1);
+	v3f[2] = z;
+	return 0;
+}
+
 static int vector3f_getPosition(lua_State *L) {
 	float *v3f = *static_cast<float**>(luaL_checkudata(L, 1, LUA_META_VECTOR3F));
 	lua_pushnumber(L, v3f[0]/*->getX()*/);
@@ -62,6 +86,7 @@ static int vector3f_getPosition(lua_State *L) {
 static int vector3f_free(lua_State *L) {
 	// printf("vector3f_free\n");
 	float *v3f = *static_cast<float**>(luaL_checkudata(L, 1, LUA_META_VECTOR3F));
+	printf("vector3f_free %.1f %.1f %.1f\n", v3f[0], v3f[1], v3f[2]);
 	free(v3f);
 	return 0;
 }
