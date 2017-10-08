@@ -43,7 +43,9 @@ static int wrap_rcRasterizeTriangle(lua_State *L) {
 	float *v1 = *static_cast<float**>(luaL_checkudata(L, 4, LUA_META_VECTOR3F));
 	float *v2 = *static_cast<float**>(luaL_checkudata(L, 5, LUA_META_VECTOR3F));
 
-	rcRasterizeTriangle(context, v0, v1, v2, RC_WALKABLE_AREA, *heightfield, 0);
+	unsigned char area = (unsigned char)luaL_checkint(L, 6);
+
+	rcRasterizeTriangle(context, v0, v1, v2, area, *heightfield, 0);
 
 	return 0;
 }

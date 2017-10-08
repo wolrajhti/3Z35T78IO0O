@@ -10,6 +10,7 @@
 		static const luaL_Reg methods[] = {
 			{"getVerts", getVerts},
 			{"getPolys", getPolys},
+			{"getAreas", getAreas},
 			{"getNvp", getNvp},
 			{"__gc", wrap_rcPolyMesh_free},
 			{nullptr, nullptr}
@@ -29,7 +30,6 @@
 	}
 
 	for (int i = 0; i < polyMesh->npolys; ++i){
-		// printf("polyMesh->flags[%d] = %hu\n", i, polyMesh->flags[i]);
 		polyMesh->flags[i] = 12;
 	}
 
@@ -57,6 +57,16 @@ static int getPolys(lua_State *L) {
 	}
 
 	return polyMesh->npolys * polyMesh->nvp;
+}
+
+static int getAreas(lua_State *L) {
+	rcPolyMesh *polyMesh = *static_cast<rcPolyMesh**>(luaL_checkudata(L, 1, LUA_META_WRAP_RCPOLYMESH));
+
+	for (int i = 0; i < polyMesh->npolys; ++i){
+		lua_pushnumber(L, polyMesh->areas[i]);
+	}
+
+	return polyMesh->npolys;
 }
 
 static int getNvp(lua_State *L) {

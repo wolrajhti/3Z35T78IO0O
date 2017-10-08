@@ -9,62 +9,101 @@ local max = rl.newVector3f(800, 2, 600)
 
 local heightfield = rl.newRcHeightfield(context, 800, 600, min, max, 1, 1)
 
+-- local obj = obj_loader.load('test.obj')
+--
+-- for i, f in ipairs(obj.f) do
+-- 	print('---')
+-- 	print(f[1].v, obj.v[f[1].v].x, obj.v[f[1].v].y, obj.v[f[1].v].z)
+-- 	print(f[2].v, obj.v[f[2].v].x, obj.v[f[2].v].y, obj.v[f[2].v].z)
+-- 	print(f[3].v, obj.v[f[3].v].x, obj.v[f[3].v].y, obj.v[f[3].v].z)
+-- 	heightfield:rcRasterizeTriangle(
+-- 		context,
+-- 		rl.newVector3f(obj.v[f[1].v].x, obj.v[f[1].v].y, obj.v[f[1].v].z),
+-- 		rl.newVector3f(obj.v[f[2].v].x, obj.v[f[2].v].y, obj.v[f[2].v].z),
+-- 		rl.newVector3f(obj.v[f[3].v].x, obj.v[f[3].v].y, obj.v[f[3].v].z)
+-- 	)
+-- end
+
 heightfield:rcRasterizeTriangle(
 	context,
 	rl.newVector3f(0, 0, 0),
 	rl.newVector3f(400, 0, 0),
-	rl.newVector3f(400, 0, 300)
+	rl.newVector3f(400, 0, 300),
+	63
 )
 
 heightfield:rcRasterizeTriangle(
 	context,
 	rl.newVector3f(0, 0, 0),
 	rl.newVector3f(400, 0, 300),
-	rl.newVector3f(0, 0, 300)
+	rl.newVector3f(0, 0, 300),
+	63
 )
 
 heightfield:rcRasterizeTriangle(
 	context,
 	rl.newVector3f(100, 0, 100),
 	rl.newVector3f(200, 0, 100),
-	rl.newVector3f(200, 0, 500)
+	rl.newVector3f(200, 0, 500),
+	63
 )
 
 heightfield:rcRasterizeTriangle(
 	context,
 	rl.newVector3f(100, 0, 100),
 	rl.newVector3f(200, 0, 500),
-	rl.newVector3f(100, 0, 500)
+	rl.newVector3f(100, 0, 500),
+	63
+)
+
+heightfield:rcRasterizeTriangle(
+	context,
+	rl.newVector3f(250, 0, 100),
+	rl.newVector3f(350, 0, 100),
+	rl.newVector3f(350, 0, 500),
+	50
+)
+
+heightfield:rcRasterizeTriangle(
+	context,
+	rl.newVector3f(250, 0, 100),
+	rl.newVector3f(350, 0, 500),
+	rl.newVector3f(250, 0, 500),
+	50
 )
 
 heightfield:rcRasterizeTriangle(
 	context,
 	rl.newVector3f(50, 0, 400),
 	rl.newVector3f(400, 0, 400),
-	rl.newVector3f(400, 0, 450)
+	rl.newVector3f(400, 0, 450),
+	63
 )
 
 heightfield:rcRasterizeTriangle(
 	context,
 	rl.newVector3f(50, 0, 400),
 	rl.newVector3f(400, 0, 450),
-	rl.newVector3f(50, 0, 450)
+	rl.newVector3f(50, 0, 450),
+	63
 )
 
 -- heightfield:printSpans()
 
 local compactHeightfield = rl.newRcCompactHeightfield(context, 3, 0, heightfield)
 
-compactHeightfield:rcErodeWalkableArea(context, 20)
+compactHeightfield:rcErodeWalkableArea(context, 5)
 compactHeightfield:rcBuildDistanceField(context)
 compactHeightfield:rcBuildRegions(context)
 
-local contourSet = rl.newRcContourSet(context, compactHeightfield, 5, 50)
+local contourSet = rl.newRcContourSet(context, compactHeightfield, 5, 0)
 
 local polyMesh = rl.newRcPolyMesh(context, contourSet)
 
 local rawVerts = {polyMesh:getVerts()}
 local rawPolys = {polyMesh:getPolys()}
+local areas = {polyMesh:getAreas()}
+print(unpack(areas))
 local nvp = polyMesh:getNvp()
 local rcPolys = {}
 
@@ -92,10 +131,6 @@ local pS = navMeshQuery:findNearestPoly(vS, navMesh)
 local pE = navMeshQuery:findNearestPoly(vE, navMesh)
 
 local npath, path = navMeshQuery:findPath(vS, vE, pS, pE)
-
-print('FROM LUA npath', npath)
-
-print('FROM LUA vS', vS:getX(), vS:getY(), vS:getZ())
 
 local pathCorridor = rl.newDtPathCorridor()
 
@@ -262,15 +297,28 @@ local recast = {
 		end
 	end,
 	drawRCPolys = function()
-		love.graphics.setColor(200, 100, 25)
+		-- love.graphics.setColor(200, 100, 25)
+		-- for i, t in ipairs(rcPolys) do
+		-- 	for j = 1, #t, 2 do
+		-- 		if j < #t - 2 then
+		-- 			love.graphics.line(t[j + 0], t[j + 1], t[j + 2], t[j + 3])
+		-- 		else
+		-- 			love.graphics.line(t[j + 0], t[j + 1], t[1], t[2])
+		-- 		end
+		-- 	end
+		-- end
+
 		for i, t in ipairs(rcPolys) do
-			for j = 1, #t, 2 do
-				if j < #t - 2 then
-					love.graphics.line(t[j + 0], t[j + 1], t[j + 2], t[j + 3])
-				else
-					love.graphics.line(t[j + 0], t[j + 1], t[1], t[2])
-				end
-			end
+			love.graphics.setColor(areas[i] / 63 * 200, 0, 0)
+			love.graphics.polygon('fill', t)
+			-- love.graphics.setColor(200, 100, 25)
+			-- for j = 1, #t, 2 do
+			-- 	if j < #t - 2 then
+			-- 		love.graphics.line(t[j + 0], t[j + 1], t[j + 2], t[j + 3])
+			-- 	else
+			-- 		love.graphics.line(t[j + 0], t[j + 1], t[1], t[2])
+			-- 	end
+			-- end
 		end
 	end,
 	drawRCPath = function()
@@ -361,9 +409,22 @@ local recast = {
 		end
 	end,
 	--export
-	export = function()
-		local tm = imap(triangles, function(i, t) return vertices[t]..'\n' end)
-		print(unpack(tm))
+	export = function(filename)
+		if not string.match(filename, '%.obj$') then filename = filename .. '.obj' end
+
+		print(string.format('exporting to %s', filename))
+
+		local file = io.open(filename, 'w+')
+
+		for i = 1, #vertices, 2 do
+			file:write(string.format('v %d %d %d\n', vertices[i], 0, vertices[i + 1]))
+		end
+
+		for i = 1, #triangles, 3 do
+			file:write(string.format('f %d %d %d\n', triangles[i], triangles[i + 1], triangles[i + 2]))
+		end
+
+		file:close()
 	end
 }
 

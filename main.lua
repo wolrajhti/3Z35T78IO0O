@@ -10,6 +10,13 @@ local recast = require('recast')
 love.graphics.setLineWidth(2)
 love.graphics.setLineStyle('rough')
 
+-- local Mesh = require('mesh')
+--
+-- local mesh = Mesh()
+-- local buffer = {}
+--
+-- mesh:import('test.obj')
+
 function love.load()
 end
 
@@ -35,6 +42,11 @@ function love.update(dt)
 end
 
 function love.draw()
+	-- if #buffer > 4 then
+	-- 	love.graphics.line(buffer)
+	-- 	love.graphics.line(buffer[#buffer - 1], buffer[#buffer], buffer[1], buffer[2])
+	-- end
+	-- mesh:drawXZ()
 	recast.drawVertices()
 	recast.drawTriangles()
 	recast.drawCurrentVertices()
@@ -47,6 +59,8 @@ end
 
 function love.mousepressed(x, y, button)
 	recast.addVertex(x, y)
+	-- table.insert(buffer, x)
+	-- table.insert(buffer, y)
 end
 
 function love.keypressed(key)
@@ -66,6 +80,12 @@ function love.keypressed(key)
 	elseif key == 'space' then
 		recast.setPath()
 	elseif key == 'x' then
-		recast.export()
+		recast.export('test.obj')
 	end
+	-- if key == 'space' then
+	-- 	mesh:addPolygonXZ(buffer)
+	-- 	buffer = {}
+	-- elseif key == 'x' then
+	-- 	mesh:export('test.obj')
+	-- end
 end

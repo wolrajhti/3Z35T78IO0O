@@ -14,6 +14,7 @@
 /*static*/ int wrap_rcPolyMesh_new(lua_State *L);
 static int getVerts(lua_State *L);
 static int getPolys(lua_State *L);
+static int getAreas(lua_State *L);
 static int getNvp(lua_State *L);
 static int wrap_rcPolyMesh_free(lua_State *L);
 
