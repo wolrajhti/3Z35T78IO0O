@@ -29,7 +29,7 @@ heightfield:rcRasterizeTriangle(
 	rl.newVector3f(0, 0, 0),
 	rl.newVector3f(400, 0, 0),
 	rl.newVector3f(400, 0, 300),
-	63
+	1
 )
 
 heightfield:rcRasterizeTriangle(
@@ -37,7 +37,7 @@ heightfield:rcRasterizeTriangle(
 	rl.newVector3f(0, 0, 0),
 	rl.newVector3f(400, 0, 300),
 	rl.newVector3f(0, 0, 300),
-	63
+	1
 )
 
 heightfield:rcRasterizeTriangle(
@@ -45,7 +45,7 @@ heightfield:rcRasterizeTriangle(
 	rl.newVector3f(100, 0, 100),
 	rl.newVector3f(200, 0, 100),
 	rl.newVector3f(200, 0, 500),
-	63
+	1
 )
 
 heightfield:rcRasterizeTriangle(
@@ -53,7 +53,7 @@ heightfield:rcRasterizeTriangle(
 	rl.newVector3f(100, 0, 100),
 	rl.newVector3f(200, 0, 500),
 	rl.newVector3f(100, 0, 500),
-	63
+	1
 )
 
 heightfield:rcRasterizeTriangle(
@@ -61,7 +61,7 @@ heightfield:rcRasterizeTriangle(
 	rl.newVector3f(250, 0, 100),
 	rl.newVector3f(350, 0, 100),
 	rl.newVector3f(350, 0, 500),
-	50
+	2
 )
 
 heightfield:rcRasterizeTriangle(
@@ -69,7 +69,7 @@ heightfield:rcRasterizeTriangle(
 	rl.newVector3f(250, 0, 100),
 	rl.newVector3f(350, 0, 500),
 	rl.newVector3f(250, 0, 500),
-	50
+	2
 )
 
 heightfield:rcRasterizeTriangle(
@@ -77,7 +77,7 @@ heightfield:rcRasterizeTriangle(
 	rl.newVector3f(50, 0, 400),
 	rl.newVector3f(400, 0, 400),
 	rl.newVector3f(400, 0, 450),
-	63
+	1
 )
 
 heightfield:rcRasterizeTriangle(
@@ -85,8 +85,10 @@ heightfield:rcRasterizeTriangle(
 	rl.newVector3f(50, 0, 400),
 	rl.newVector3f(400, 0, 450),
 	rl.newVector3f(50, 0, 450),
-	63
+	1
 )
+
+local rcSx, rcSy, rcEx, rcEy = 300, 150, 300, 425
 
 -- heightfield:printSpans()
 
@@ -96,7 +98,7 @@ compactHeightfield:rcErodeWalkableArea(context, 5)
 compactHeightfield:rcBuildDistanceField(context)
 compactHeightfield:rcBuildRegions(context)
 
-local contourSet = rl.newRcContourSet(context, compactHeightfield, 5, 0)
+local contourSet = rl.newRcContourSet(context, compactHeightfield, 10, 50)
 
 local polyMesh = rl.newRcPolyMesh(context, contourSet)
 
@@ -120,25 +122,30 @@ end
 
 local navMesh = rl.newDtNavMesh(polyMesh)
 
+local queryFilter = rl.newDtQueryFilter()
+
+queryFilter:setAreaCost(1, 1)
+queryFilter:setAreaCost(2, 1000)
+
 local navMeshQuery = rl.newDtNavMeshQuery(navMesh)
 
-local rcSx, rcSy, rcEx, rcEy = 320, 80, 75, 425
+-- local rcSx, rcSy, rcEx, rcEy = 320, 80, 75, 425
 
 vS = rl.newVector3f(rcSx, 0, rcSy)
 vE = rl.newVector3f(rcEx, 0, rcEy)
 
-local pS = navMeshQuery:findNearestPoly(vS, navMesh)
-local pE = navMeshQuery:findNearestPoly(vE, navMesh)
+local pS = navMeshQuery:findNearestPoly(vS, navMesh, queryFilter)
+local pE = navMeshQuery:findNearestPoly(vE, navMesh, queryFilter)
 
-local npath, path = navMeshQuery:findPath(vS, vE, pS, pE)
+local npath, path = navMeshQuery:findPath(vS, vE, pS, pE, queryFilter)
 
 local pathCorridor = rl.newDtPathCorridor()
 
 pathCorridor:reset(pS, vS, navMesh)
 
-pathCorridor:setCorridor(vE, path, npath, navMesh, navMeshQuery)
+pathCorridor:setCorridor(vE, path, npath, navMesh, navMeshQuery, queryFilter)
 
-local corridorCorners = pathCorridor:findCorners(navMeshQuery)
+local corridorCorners = pathCorridor:findCorners(navMeshQuery, queryFilter)
 
 local movePos = rl.newVector3f(0, 0, 0)
 local moveTargetPos = rl.newVector3f(0, 0, 0)
@@ -173,6 +180,8 @@ local function imap(t, func)
 	end
 	return tm
 end
+
+local TIME = 0
 
 local recast = {
 	-- construction
@@ -309,16 +318,18 @@ local recast = {
 		-- end
 
 		for i, t in ipairs(rcPolys) do
-			love.graphics.setColor(areas[i] / 63 * 200, 0, 0)
+			love.graphics.setColor(areas[i] * 50, 0, 0)
 			love.graphics.polygon('fill', t)
-			-- love.graphics.setColor(200, 100, 25)
-			-- for j = 1, #t, 2 do
-			-- 	if j < #t - 2 then
-			-- 		love.graphics.line(t[j + 0], t[j + 1], t[j + 2], t[j + 3])
-			-- 	else
-			-- 		love.graphics.line(t[j + 0], t[j + 1], t[1], t[2])
-			-- 	end
-			-- end
+		end
+		love.graphics.setColor(200, 100, 25)
+		for i, t in ipairs(rcPolys) do
+			for j = 1, #t, 2 do
+				if j < #t - 2 then
+					love.graphics.line(t[j + 0], t[j + 1], t[j + 2], t[j + 3])
+				else
+					love.graphics.line(t[j + 0], t[j + 1], t[1], t[2])
+				end
+			end
 		end
 	end,
 	drawRCPath = function()
@@ -381,7 +392,7 @@ local recast = {
 		movePos:setY(0)
 		movePos:setZ(rcSy)
 
-		return pathCorridor:movePosition(movePos, navMeshQuery)
+		return pathCorridor:movePosition(movePos, navMeshQuery, queryFilter)
 	end,
 	moveTargetPosition = function(dx, dy)
 		rcEx, rcEy = rcEx + dx, rcEy + dy
@@ -389,16 +400,25 @@ local recast = {
 		moveTargetPos:setY(0)
 		moveTargetPos:setZ(rcEy)
 
-		return pathCorridor:moveTargetPosition(moveTargetPos, navMeshQuery)
+		return pathCorridor:moveTargetPosition(moveTargetPos, navMeshQuery, queryFilter)
 	end,
 	findCorners = function()
-		corridorCorners = pathCorridor:findCorners(navMeshQuery)
+		corridorCorners = pathCorridor:findCorners(navMeshQuery, queryFilter)
+	end,
+	optimizePathTopology = function(dt)
+		if TIME + dt > 0.5 then
+			print('optimizing path topology')
+			pathCorridor:optimizePathTopology(navMeshQuery, queryFilter)
+			TIME = TIME + dt - 1
+		else
+			TIME = TIME + dt
+		end
 	end,
 	updatePos = function(self, dt)
 		local pos = Vector(rcSx, rcSy)
 		local tar = Vector(corridorCorners[3], corridorCorners[4])
 
-		local dPos = (tar - pos):normalize():mul(100 * dt)
+		local dPos = (tar - pos):normalize():mul(25 * dt)
 
 		return self.movePosition(dPos.x, dPos.y)
 	end,
@@ -437,6 +457,7 @@ recast.contourSet = contourSet
 recast.polyMesh = polyMesh
 recast.path = path
 recast.navMesh = navMesh
+recast.queryFilter = queryFilter
 recast.navMeshQuery = navMeshQuery
 recast.vS = vS
 recast.vE = vE

@@ -12,6 +12,7 @@
 # include "DetourNavMeshQuery.h"
 # include "DetourPathCorridor.h"
 # include "wrap_dtNavMesh.h"
+# include "wrap_dtQueryFilter.h"
 # include "wrap_dtNavMeshQuery.h"
 # include "path.h"
 
@@ -24,6 +25,7 @@ static int setCorridor(lua_State *L);
 static int wrap_dtPathCorridor_findCorners(lua_State *L);
 static int wrap_dtPathCorridor_movePosition(lua_State *L);
 static int wrap_dtPathCorridor_moveTargetPosition(lua_State *L);
+static int wrap_dtPathCorridor_optimizePathTopology(lua_State *L);
 
 static int wrap_dtPathCorridor_free(lua_State *L);
 

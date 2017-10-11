@@ -24,21 +24,22 @@ function love.update(dt)
 	local needsCornersUpdate = false
 	recast.update(dt)
 	if love.keyboard.isDown('up') then
-		needsCornersUpdate = recast.moveTargetPosition(0, -5)
+		needsCornersUpdate = recast.moveTargetPosition(0, -4)
 	end
 	if love.keyboard.isDown('down') then
-		needsCornersUpdate = recast.moveTargetPosition(0, 5)
+		needsCornersUpdate = recast.moveTargetPosition(0, 4)
 	end
 	if love.keyboard.isDown('left') then
-		needsCornersUpdate = recast.moveTargetPosition(-5, 0)
+		needsCornersUpdate = recast.moveTargetPosition(-4, 0)
 	end
 	if love.keyboard.isDown('right') then
-		needsCornersUpdate = recast.moveTargetPosition(5, 0)
+		needsCornersUpdate = recast.moveTargetPosition(4, 0)
 	end
 	needsCornersUpdate = recast:updatePos(dt) or needsCornersUpdate
 	if needsCornersUpdate then
 		recast.findCorners()
 	end
+	recast.optimizePathTopology(dt)
 end
 
 function love.draw()

@@ -9,6 +9,7 @@ extern "C" int luaopen_rl(lua_State *L) {
 		{"newRcPolyMesh", wrap_rcPolyMesh_new},
 
 		{"newDtNavMesh", wrap_dtNavMesh_new},
+		{"newDtQueryFilter", wrap_dtQueryFilter_new},
 		{"newDtNavMeshQuery", wrap_dtNavMeshQuery_new},
 		{"newDtPathCorridor", wrap_dtPathCorridor_new},
 

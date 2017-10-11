@@ -10,6 +10,7 @@ int wrap_dtPathCorridor_new(lua_State *L) {
 			{"findCorners", wrap_dtPathCorridor_findCorners},
 			{"movePosition", wrap_dtPathCorridor_movePosition},
 			{"moveTargetPosition", wrap_dtPathCorridor_moveTargetPosition},
+			{"optimizePathTopology", wrap_dtPathCorridor_optimizePathTopology},
 			{"__gc", wrap_dtPathCorridor_free},
 			{nullptr, nullptr}
 		};
@@ -56,6 +57,8 @@ static int setCorridor(lua_State *L) {
 	dtNavMesh *navMesh = *static_cast<dtNavMesh**>(luaL_checkudata(L, 5, LUA_META_WRAP_DTNAVMESH));
 	dtNavMeshQuery *navMeshQuery = *static_cast<dtNavMeshQuery**>(luaL_checkudata(L, 6, LUA_META_WRAP_DTNAVMESHQUERY));
 
+	dtQueryFilter *queryFilter = *static_cast<dtQueryFilter**>(luaL_checkudata(L, 7, LUA_META_WRAP_DTQUERYFILTER));
+
 	printf("end %.2f %.2f %.2f \n", end[0], end[1], end[2]);
 
 	for (int i = 0; i < npoly; ++i) {
@@ -66,7 +69,7 @@ static int setCorridor(lua_State *L) {
 
 	pathCorridor->setCorridor(end, path, npoly);
 
-	if (!pathCorridor->isValid(npoly, navMeshQuery, new dtQueryFilter())) {
+	if (!pathCorridor->isValid(npoly, navMeshQuery, queryFilter)) {
 		luaL_error(L, "Invalid corridor.\n");
 	}
 
@@ -76,6 +79,8 @@ static int setCorridor(lua_State *L) {
 static int wrap_dtPathCorridor_findCorners(lua_State *L) {
 	dtPathCorridor *pathCorridor = *static_cast<dtPathCorridor**>(luaL_checkudata(L, 1, LUA_META_WRAP_DTPATHCORRIDOR));
 	dtNavMeshQuery *navMeshQuery = *static_cast<dtNavMeshQuery**>(luaL_checkudata(L, 2, LUA_META_WRAP_DTNAVMESHQUERY));
+
+	dtQueryFilter *queryFilter = *static_cast<dtQueryFilter**>(luaL_checkudata(L, 3, LUA_META_WRAP_DTQUERYFILTER));
 
 	float cornerVerts[256 * 3];
 	unsigned char cornerFlags[256];
@@ -88,7 +93,7 @@ static int wrap_dtPathCorridor_findCorners(lua_State *L) {
 		cornerPolys,
 		maxCorners,
 		navMeshQuery,
-		new dtQueryFilter()
+		queryFilter
 	);
 
 	// printf("nCorners = %i\n", nCorners);
@@ -122,7 +127,9 @@ static int wrap_dtPathCorridor_movePosition(lua_State *L) {
 	float *pos = *static_cast<float**>(luaL_checkudata(L, 2, LUA_META_VECTOR3F));
 	dtNavMeshQuery *navMeshQuery = *static_cast<dtNavMeshQuery**>(luaL_checkudata(L, 3, LUA_META_WRAP_DTNAVMESHQUERY));
 
-	lua_pushboolean(L, pathCorridor->movePosition(pos, navMeshQuery, new dtQueryFilter()));
+	dtQueryFilter *queryFilter = *static_cast<dtQueryFilter**>(luaL_checkudata(L, 4, LUA_META_WRAP_DTQUERYFILTER));
+
+	lua_pushboolean(L, pathCorridor->movePosition(pos, navMeshQuery, queryFilter));
 
 	return 1;
 }
@@ -132,7 +139,20 @@ static int wrap_dtPathCorridor_moveTargetPosition(lua_State *L) {
 	float *pos = *static_cast<float**>(luaL_checkudata(L, 2, LUA_META_VECTOR3F));
 	dtNavMeshQuery *navMeshQuery = *static_cast<dtNavMeshQuery**>(luaL_checkudata(L, 3, LUA_META_WRAP_DTNAVMESHQUERY));
 
-	lua_pushboolean(L, pathCorridor->moveTargetPosition(pos, navMeshQuery, new dtQueryFilter()));
+	dtQueryFilter *queryFilter = *static_cast<dtQueryFilter**>(luaL_checkudata(L, 4, LUA_META_WRAP_DTQUERYFILTER));
+
+	lua_pushboolean(L, pathCorridor->moveTargetPosition(pos, navMeshQuery, queryFilter));
+
+	return 1;
+}
+
+static int wrap_dtPathCorridor_optimizePathTopology(lua_State *L) {
+	dtPathCorridor *pathCorridor = *static_cast<dtPathCorridor**>(luaL_checkudata(L, 1, LUA_META_WRAP_DTPATHCORRIDOR));
+	dtNavMeshQuery *navMeshQuery = *static_cast<dtNavMeshQuery**>(luaL_checkudata(L, 2, LUA_META_WRAP_DTNAVMESHQUERY));
+
+	dtQueryFilter *queryFilter = *static_cast<dtQueryFilter**>(luaL_checkudata(L, 3, LUA_META_WRAP_DTQUERYFILTER));
+
+	lua_pushboolean(L, pathCorridor->optimizePathTopology(navMeshQuery, queryFilter));
 
 	return 1;
 }

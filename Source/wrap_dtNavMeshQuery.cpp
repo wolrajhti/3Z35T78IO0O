@@ -34,6 +34,8 @@ static int findNearestPoly(lua_State *L) {
 	/* passing navMesh here for debug purpose only */
 	dtNavMesh *navMesh = *static_cast<dtNavMesh**>(luaL_checkudata(L, 3, LUA_META_WRAP_DTNAVMESH));
 
+	dtQueryFilter *queryFilter = *static_cast<dtQueryFilter**>(luaL_checkudata(L, 4, LUA_META_WRAP_DTQUERYFILTER));
+
 	printf("input = %.2f, %.2f, %.2f\n", pos[0], pos[1], pos[2]);
 
 	float output[3];
@@ -42,12 +44,12 @@ static int findNearestPoly(lua_State *L) {
 
 	path_new(L);
 
-	dtPolyRef *poly = *static_cast<dtPolyRef**>(luaL_checkudata(L, 4, LUA_META_PATH));
+	dtPolyRef *poly = *static_cast<dtPolyRef**>(luaL_checkudata(L, 5, LUA_META_PATH));
 
 	if (dtStatusFailed(navMeshQuery->findNearestPoly(
 		pos,
 		(float[3]){1.0, 1.0, 1.0},
-		new dtQueryFilter(),
+		queryFilter,
 		poly,
 		output
 	))) {
@@ -80,6 +82,8 @@ static int findPath(lua_State *L) {
 	dtPolyRef *pStart = *static_cast<dtPolyRef**>(luaL_checkudata(L, 4, LUA_META_PATH));
 	dtPolyRef *pEnd = *static_cast<dtPolyRef**>(luaL_checkudata(L, 5, LUA_META_PATH));
 
+	dtQueryFilter *queryFilter = *static_cast<dtQueryFilter**>(luaL_checkudata(L, 6, LUA_META_WRAP_DTQUERYFILTER));
+
 	int npoly;
 	dtPolyRef path[32];
 
@@ -88,7 +92,7 @@ static int findPath(lua_State *L) {
 		*pEnd,
 		start,
 		end,
-		new dtQueryFilter(),
+		queryFilter,
 		path,
 		&npoly,
 		32
@@ -102,7 +106,7 @@ static int findPath(lua_State *L) {
 
 	path_new(L);
 
-	dtPolyRef *uPath = *static_cast<dtPolyRef**>(luaL_checkudata(L, 7, LUA_META_PATH));
+	dtPolyRef *uPath = *static_cast<dtPolyRef**>(luaL_checkudata(L, 8, LUA_META_PATH));
 
 	for (int i = 0; i < npoly; ++i) {
 		uPath[i] = path[i];

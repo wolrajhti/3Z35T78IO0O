@@ -10,6 +10,7 @@
 # include "DetourNavMesh.h"
 # include "DetourNavMeshQuery.h"
 # include "wrap_dtNavMesh.h"
+# include "wrap_dtQueryFilter.h"
 # include "path.h"
 # include "vector3f.h"
 
