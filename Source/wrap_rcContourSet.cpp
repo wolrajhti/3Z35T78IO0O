@@ -23,7 +23,7 @@
 
 	rcContourSet *contourSet = *static_cast<rcContourSet**>(luaL_checkudata(L, 5, LUA_META_WRAP_RCCONTOURSET));
 
-	if(!rcBuildContours(context, *compactHeightfield, maxError, maxEdgeLen, *contourSet, RC_CONTOUR_TESS_WALL_EDGES/*| RC_CONTOUR_TESS_AREA_EDGES*/))
+	if(!rcBuildContours(context, *compactHeightfield, maxError, maxEdgeLen, *contourSet, RC_CONTOUR_TESS_WALL_EDGES | RC_CONTOUR_TESS_AREA_EDGES))
 	{
 		luaL_error(L, "error - build contours\n");
 		return 0;

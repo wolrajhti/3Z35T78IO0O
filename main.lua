@@ -56,6 +56,9 @@ function love.draw()
 	recast.drawRCSPath()
 	recast.drawStartEnd()
 	recast.drawCorridorCorners()
+	love.graphics.setColor(255, 0, 0, 100)
+	love.graphics.circle('fill', 150,  75, 10)
+	love.graphics.circle('fill', 150, 475, 10)
 end
 
 function love.mousepressed(x, y, button)

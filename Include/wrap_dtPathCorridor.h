@@ -25,6 +25,7 @@ static int setCorridor(lua_State *L);
 static int wrap_dtPathCorridor_findCorners(lua_State *L);
 static int wrap_dtPathCorridor_movePosition(lua_State *L);
 static int wrap_dtPathCorridor_moveTargetPosition(lua_State *L);
+static int wrap_dtPathCorridor_moveOverOffmeshConnection(lua_State *L);
 static int wrap_dtPathCorridor_optimizePathTopology(lua_State *L);
 
 static int wrap_dtPathCorridor_free(lua_State *L);

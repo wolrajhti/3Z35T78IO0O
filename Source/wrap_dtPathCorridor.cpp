@@ -10,6 +10,7 @@ int wrap_dtPathCorridor_new(lua_State *L) {
 			{"findCorners", wrap_dtPathCorridor_findCorners},
 			{"movePosition", wrap_dtPathCorridor_movePosition},
 			{"moveTargetPosition", wrap_dtPathCorridor_moveTargetPosition},
+			{"moveOverOffmeshConnection", wrap_dtPathCorridor_moveOverOffmeshConnection},
 			{"optimizePathTopology", wrap_dtPathCorridor_optimizePathTopology},
 			{"__gc", wrap_dtPathCorridor_free},
 			{nullptr, nullptr}
@@ -110,7 +111,8 @@ static int wrap_dtPathCorridor_findCorners(lua_State *L) {
 	lua_settable(L, -3);
 
 	for (int i = 0; i < nCorners; ++i) {
-		// printf("cornerVerts %f %f %f\n", cornerVerts[i * 3 + 0], cornerVerts[i * 3 + 1], cornerVerts[i * 3 + 2]);
+		printf("cornerVerts %f %f %f\n", cornerVerts[i * 3 + 0], cornerVerts[i * 3 + 1], cornerVerts[i * 3 + 2]);
+		printf("cornerPoly %u\n", (unsigned int)cornerPolys[i]);
 		lua_pushnumber(L, 1 + (i + 1) * 2);
 		lua_pushnumber(L, cornerVerts[i * 3 + 0]);
 		lua_settable(L, -3);
@@ -153,6 +155,20 @@ static int wrap_dtPathCorridor_optimizePathTopology(lua_State *L) {
 	dtQueryFilter *queryFilter = *static_cast<dtQueryFilter**>(luaL_checkudata(L, 3, LUA_META_WRAP_DTQUERYFILTER));
 
 	lua_pushboolean(L, pathCorridor->optimizePathTopology(navMeshQuery, queryFilter));
+
+	return 1;
+}
+
+static int wrap_dtPathCorridor_moveOverOffmeshConnection(lua_State *L) {
+	dtPathCorridor *pathCorridor = *static_cast<dtPathCorridor**>(luaL_checkudata(L, 1, LUA_META_WRAP_DTPATHCORRIDOR));
+	dtPolyRef *offMeshConRef = *static_cast<dtPolyRef**>(luaL_checkudata(L, 2, LUA_META_PATH));
+	dtNavMeshQuery *navMeshQuery = *static_cast<dtNavMeshQuery**>(luaL_checkudata(L, 3, LUA_META_WRAP_DTNAVMESHQUERY));
+
+	dtPolyRef refs[2];
+	float startPos[3];
+	float endPos[3];
+
+	lua_pushboolean(L, pathCorridor->moveOverOffmeshConnection(*offMeshConRef, refs, startPos, endPos, navMeshQuery));
 
 	return 1;
 }

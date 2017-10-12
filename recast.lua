@@ -88,7 +88,9 @@ heightfield:rcRasterizeTriangle(
 	1
 )
 
-local rcSx, rcSy, rcEx, rcEy = 300, 150, 300, 425
+-- local rcSx, rcSy, rcEx, rcEy = 300, 150, 300, 425
+
+local rcSx, rcSy, rcEx, rcEy = 150, 65, 300, 425
 
 -- heightfield:printSpans()
 
@@ -98,7 +100,7 @@ compactHeightfield:rcErodeWalkableArea(context, 5)
 compactHeightfield:rcBuildDistanceField(context)
 compactHeightfield:rcBuildRegions(context)
 
-local contourSet = rl.newRcContourSet(context, compactHeightfield, 10, 50)
+local contourSet = rl.newRcContourSet(context, compactHeightfield, 3, 0)
 
 local polyMesh = rl.newRcPolyMesh(context, contourSet)
 
@@ -124,8 +126,9 @@ local navMesh = rl.newDtNavMesh(polyMesh)
 
 local queryFilter = rl.newDtQueryFilter()
 
-queryFilter:setAreaCost(1, 1)
+queryFilter:setAreaCost(1, 500)
 queryFilter:setAreaCost(2, 1000)
+queryFilter:setAreaCost(5, 1)
 
 local navMeshQuery = rl.newDtNavMeshQuery(navMesh)
 
@@ -418,7 +421,7 @@ local recast = {
 		local pos = Vector(rcSx, rcSy)
 		local tar = Vector(corridorCorners[3], corridorCorners[4])
 
-		local dPos = (tar - pos):normalize():mul(25 * dt)
+		local dPos = (tar - pos):normalize():mul(.25 * dt)
 
 		return self.movePosition(dPos.x, dPos.y)
 	end,

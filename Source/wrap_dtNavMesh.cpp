@@ -35,6 +35,23 @@
 	params.ch = polyMesh->ch;
 	params.buildBvTree = true;
 
+	int offMeshConCount = 1;
+
+	float offMeshConVerts[] = {150, 1, 75, 150, 1, 475};
+	float offMeshConRads[] = {10};
+	unsigned char offMeshConDirs[] = {DT_OFFMESH_CON_BIDIR};
+	unsigned char offMeshConAreas[] = {5};
+	unsigned short offMeshConFlags[] = {12};
+	unsigned int offMeshConId[] = {666};
+
+	params.offMeshConVerts = offMeshConVerts;
+	params.offMeshConRad = offMeshConRads;
+	params.offMeshConDir = offMeshConDirs;
+	params.offMeshConAreas = offMeshConAreas;
+	params.offMeshConFlags = offMeshConFlags;
+	params.offMeshConUserID = offMeshConId;
+	params.offMeshConCount = offMeshConCount;
+
 	rcVcopy(params.bmin, polyMesh->bmin);
 	rcVcopy(params.bmax, polyMesh->bmax);
 
@@ -49,6 +66,17 @@
 
 	/* SOLO */
 	navMesh->init(navData, navDataSize, DT_TILE_FREE_DATA);
+
+	const dtNavMesh &mesh = *navMesh;
+
+	for (int i = 0; i < navMesh->getMaxTiles(); ++i)
+	{
+		const dtMeshTile* tile = mesh.getTile(i);
+		if (!tile->header) continue;
+		printf("DEBUG tile->header->polyCount = %d\n", tile->header->polyCount);
+		printf("DEBUG offMeshBase = %d\n", tile->header->offMeshBase);
+		printf("DEBUG offMeshConCount = %d\n", tile->header->offMeshConCount);
+	}
 
 	/* TILED */
 	// dtNavMeshParams *navMeshParams;
