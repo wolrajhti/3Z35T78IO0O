@@ -85,7 +85,7 @@ static int printSpans(lua_State *L) {
 }
 
 static int wrap_rcHeightfield_free(lua_State *L) {
-	printf("wrap_rcHeightfield_free\n");
+	// printf("wrap_rcHeightfield_free\n");
 	rcHeightfield *heightfield = *static_cast<rcHeightfield**>(luaL_checkudata(L, 1, LUA_META_WRAP_RCHEIGHTFIELD));
 	rcFreeHeightField(heightfield);
 	return 0;

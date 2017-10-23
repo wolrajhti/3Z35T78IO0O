@@ -27,7 +27,7 @@ int vector3f_new(lua_State *L) {
 	}
 	lua_setmetatable(L, -2);
 
-	float *v3f = *static_cast<float**>(luaL_checkudata(L, 1, LUA_META_VECTOR3F));
+	float *v3f = *static_cast<float**>(luaL_checkudata(L, -1, LUA_META_VECTOR3F));
 
 	v3f[0] = x;
 	v3f[1] = y;
@@ -86,7 +86,7 @@ static int vector3f_getPosition(lua_State *L) {
 static int vector3f_free(lua_State *L) {
 	// printf("vector3f_free\n");
 	float *v3f = *static_cast<float**>(luaL_checkudata(L, 1, LUA_META_VECTOR3F));
-	printf("vector3f_free %.1f %.1f %.1f\n", v3f[0], v3f[1], v3f[2]);
+	// printf("vector3f_free %.1f %.1f %.1f\n", v3f[0], v3f[1], v3f[2]);
 	free(v3f);
 	return 0;
 }

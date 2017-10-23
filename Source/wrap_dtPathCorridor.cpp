@@ -8,6 +8,7 @@ int wrap_dtPathCorridor_new(lua_State *L) {
 			{"reset", reset},
 			{"setCorridor", setCorridor},
 			{"findCorners", wrap_dtPathCorridor_findCorners},
+			{"getPos", wrap_dtPathCorridor_getPos},
 			{"movePosition", wrap_dtPathCorridor_movePosition},
 			{"moveTargetPosition", wrap_dtPathCorridor_moveTargetPosition},
 			{"moveOverOffmeshConnection", wrap_dtPathCorridor_moveOverOffmeshConnection},
@@ -110,9 +111,10 @@ static int wrap_dtPathCorridor_findCorners(lua_State *L) {
 	lua_pushnumber(L, pos[2]);
 	lua_settable(L, -3);
 
+	// printf("#");
 	for (int i = 0; i < nCorners; ++i) {
-		printf("cornerVerts %f %f %f\n", cornerVerts[i * 3 + 0], cornerVerts[i * 3 + 1], cornerVerts[i * 3 + 2]);
-		printf("cornerPoly %u\n", (unsigned int)cornerPolys[i]);
+		// printf("cornerVerts %f %f %f\n", cornerVerts[i * 3 + 0], cornerVerts[i * 3 + 1], cornerVerts[i * 3 + 2]);
+		// printf("cornerPoly %u\n", (unsigned int)cornerPolys[i]);
 		lua_pushnumber(L, 1 + (i + 1) * 2);
 		lua_pushnumber(L, cornerVerts[i * 3 + 0]);
 		lua_settable(L, -3);
@@ -120,6 +122,20 @@ static int wrap_dtPathCorridor_findCorners(lua_State *L) {
 		lua_pushnumber(L, cornerVerts[i * 3 + 2]);
 		lua_settable(L, -3);
 	}
+
+	return 1;
+}
+
+static int wrap_dtPathCorridor_getPos(lua_State *L) {
+	dtPathCorridor *pathCorridor = *static_cast<dtPathCorridor**>(luaL_checkudata(L, 1, LUA_META_WRAP_DTPATHCORRIDOR));
+
+	const float *pos = pathCorridor->getPos();
+
+	lua_pushnumber(L, pos[0]);
+	lua_pushnumber(L, pos[1]);
+	lua_pushnumber(L, pos[2]);
+
+	vector3f_new(L);
 
 	return 1;
 }
@@ -174,7 +190,7 @@ static int wrap_dtPathCorridor_moveOverOffmeshConnection(lua_State *L) {
 }
 
 static int wrap_dtPathCorridor_free(lua_State *L) {
-	printf("wrap_dtPathCorridor_free\n");
+	// printf("wrap_dtPathCorridor_free\n");
 	dtPathCorridor *pathCorridor = *static_cast<dtPathCorridor**>(luaL_checkudata(L, 1, LUA_META_WRAP_DTPATHCORRIDOR));
 	delete pathCorridor;
 	return 0;

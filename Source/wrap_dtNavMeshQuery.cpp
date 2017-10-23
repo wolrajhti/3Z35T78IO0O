@@ -116,7 +116,7 @@ static int findPath(lua_State *L) {
 }
 
 static int wrap_dtNavMeshQuery_free(lua_State *L) {
-	printf("wrap_dtNavMeshQuery_free\n");
+	// printf("wrap_dtNavMeshQuery_free\n");
 	dtNavMeshQuery *navMeshQuery = *static_cast<dtNavMeshQuery**>(luaL_checkudata(L, 1, LUA_META_WRAP_DTNAVMESHQUERY));
 	delete navMeshQuery;
 	return 0;

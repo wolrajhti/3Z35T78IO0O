@@ -100,14 +100,14 @@ compactHeightfield:rcErodeWalkableArea(context, 5)
 compactHeightfield:rcBuildDistanceField(context)
 compactHeightfield:rcBuildRegions(context)
 
-local contourSet = rl.newRcContourSet(context, compactHeightfield, 3, 0)
+local contourSet = rl.newRcContourSet(context, compactHeightfield, 10, 50)
 
 local polyMesh = rl.newRcPolyMesh(context, contourSet)
 
 local rawVerts = {polyMesh:getVerts()}
 local rawPolys = {polyMesh:getPolys()}
 local areas = {polyMesh:getAreas()}
-print(unpack(areas))
+-- print(unpack(areas))
 local nvp = polyMesh:getNvp()
 local rcPolys = {}
 
@@ -122,12 +122,19 @@ for i = 1, #rawPolys, nvp do
 	table.insert(rcPolys, poly)
 end
 
-local navMesh = rl.newDtNavMesh(polyMesh)
+local navMesh = rl.newDtNavMesh(polyMesh, {
+	-- x, y, z, x, y, z, radius, dir, area, flag, userId
+	150, 1, 75, 150, 1, 475, 10, 2, 5, 12, 666
+})
+
+local offMeshConCount, offMeshConnections = navMesh:getOffMeshConnections()
+
+print('offMeshConCount = ', offMeshConCount)
 
 local queryFilter = rl.newDtQueryFilter()
 
-queryFilter:setAreaCost(1, 500)
-queryFilter:setAreaCost(2, 1000)
+queryFilter:setAreaCost(1, 5)
+queryFilter:setAreaCost(2, 10000)
 queryFilter:setAreaCost(5, 1)
 
 local navMeshQuery = rl.newDtNavMeshQuery(navMesh)
@@ -407,11 +414,17 @@ local recast = {
 	end,
 	findCorners = function()
 		corridorCorners = pathCorridor:findCorners(navMeshQuery, queryFilter)
+		-- print('corridorCorners', unpack(corridorCorners))
 	end,
 	optimizePathTopology = function(dt)
-		if TIME + dt > 0.5 then
+		if TIME + dt > 1 then
 			print('optimizing path topology')
 			pathCorridor:optimizePathTopology(navMeshQuery, queryFilter)
+			-- if (Vector(150, 75) - Vector(rcSx, rcSy)):norm() < 10 or (Vector(150, 475) - Vector(rcSx, rcSy)):norm() < 10
+			-- 	and pathCorridor:moveOverOffmeshConnection(offMeshConnections, navMeshQuery) then
+			-- 	rcSx, LOL, rcSy = pathCorridor:getPos():getPosition()
+			-- 	corridorCorners = pathCorridor:findCorners(navMeshQuery, queryFilter)
+			-- end
 			TIME = TIME + dt - 1
 		else
 			TIME = TIME + dt
@@ -421,7 +434,7 @@ local recast = {
 		local pos = Vector(rcSx, rcSy)
 		local tar = Vector(corridorCorners[3], corridorCorners[4])
 
-		local dPos = (tar - pos):normalize():mul(.25 * dt)
+		local dPos = (tar - pos):normalize():mul(50 * dt)
 
 		return self.movePosition(dPos.x, dPos.y)
 	end,
@@ -460,6 +473,7 @@ recast.contourSet = contourSet
 recast.polyMesh = polyMesh
 recast.path = path
 recast.navMesh = navMesh
+-- recast.offMeshConnections = offMeshConnections
 recast.queryFilter = queryFilter
 recast.navMeshQuery = navMeshQuery
 recast.vS = vS

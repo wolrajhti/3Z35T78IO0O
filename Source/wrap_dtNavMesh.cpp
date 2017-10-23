@@ -3,10 +3,13 @@
 /*static*/ int wrap_dtNavMesh_new(lua_State *L) {
 	rcPolyMesh *polyMesh = *static_cast<rcPolyMesh**>(luaL_checkudata(L, 1, LUA_META_WRAP_RCPOLYMESH));
 
+	int offset = lua_gettop(L) == 2 ? 1 : 0;
+
 	*static_cast<dtNavMesh**>(lua_newuserdata(L, sizeof(dtNavMesh*))) = new dtNavMesh();
 
 	if (luaL_newmetatable(L, LUA_META_WRAP_DTNAVMESH)) {
 		static const luaL_Reg methods[] = {
+			{"getOffMeshConnections", wrap_dtNavMesh_getOffMeshConnections},
 			{"__gc", wrap_dtNavMesh_free},
 			{nullptr, nullptr}
 		};
@@ -16,7 +19,7 @@
 	}
 	lua_setmetatable(L, -2);
 
-	dtNavMesh *navMesh = *static_cast<dtNavMesh**>(luaL_checkudata(L, 2, LUA_META_WRAP_DTNAVMESH));
+	dtNavMesh *navMesh = *static_cast<dtNavMesh**>(luaL_checkudata(L, 2 + offset, LUA_META_WRAP_DTNAVMESH));
 
 	dtNavMeshCreateParams params;
 
@@ -35,14 +38,56 @@
 	params.ch = polyMesh->ch;
 	params.buildBvTree = true;
 
-	int offMeshConCount = 1;
+	int size = 0;
 
-	float offMeshConVerts[] = {150, 1, 75, 150, 1, 475};
-	float offMeshConRads[] = {10};
-	unsigned char offMeshConDirs[] = {DT_OFFMESH_CON_BIDIR};
-	unsigned char offMeshConAreas[] = {5};
-	unsigned short offMeshConFlags[] = {12};
-	unsigned int offMeshConId[] = {666};
+	if (offset) {
+		lua_pushnil(L);  /* first key */
+		while (lua_next(L, 2) != 0) {
+		  /* uses 'key' (at index -2) and 'value' (at index -1) */
+		//   printf("%s - %.2f\n",
+		// 		 lua_typename(L, lua_type(L, -2)),
+		// 		 luaL_checknumber(L, -1));
+		  /* removes 'value'; keeps 'key' for next iteration */
+		  lua_pop(L, 1);
+		  ++size;
+		}
+		// printf("size = %d\n", size);
+	}
+
+	int offMeshConCount = size / 11;
+
+	float offMeshConVerts[6 * offMeshConCount];
+	float offMeshConRads[offMeshConCount];
+	unsigned char offMeshConDirs[offMeshConCount];
+	unsigned char offMeshConAreas[offMeshConCount];
+	unsigned short offMeshConFlags[offMeshConCount];
+	unsigned int offMeshConId[offMeshConCount];
+
+	for (int i = 0; i < size; i += 11) {
+		for (int j = 0; j < 11; ++j) {
+			lua_rawgeti(L, 2, i + j + 1);
+		}
+
+		offMeshConVerts[i * 6 + 0] = (float)luaL_checknumber(L, -11);
+		offMeshConVerts[i * 6 + 1] = (float)luaL_checknumber(L, -10);
+		offMeshConVerts[i * 6 + 2] = (float)luaL_checknumber(L, -9);
+
+		offMeshConVerts[i * 6 + 3] = (float)luaL_checknumber(L, -8);
+		offMeshConVerts[i * 6 + 4] = (float)luaL_checknumber(L, -7);
+		offMeshConVerts[i * 6 + 5] = (float)luaL_checknumber(L, -6);
+
+		offMeshConRads[i] = (float)luaL_checknumber(L, -5);
+
+		offMeshConDirs[i] = luaL_checkint(L, -4) == 2 ? DT_OFFMESH_CON_BIDIR : 0;
+
+		offMeshConAreas[i] = luaL_checkint(L, -3);
+
+		offMeshConFlags[i] = luaL_checkint(L, -2);
+
+		offMeshConId[i] = luaL_checkint(L, -1);
+
+		lua_pop(L, 11);
+	}
 
 	params.offMeshConVerts = offMeshConVerts;
 	params.offMeshConRad = offMeshConRads;
@@ -67,16 +112,9 @@
 	/* SOLO */
 	navMesh->init(navData, navDataSize, DT_TILE_FREE_DATA);
 
-	const dtNavMesh &mesh = *navMesh;
-
-	for (int i = 0; i < navMesh->getMaxTiles(); ++i)
-	{
-		const dtMeshTile* tile = mesh.getTile(i);
-		if (!tile->header) continue;
-		printf("DEBUG tile->header->polyCount = %d\n", tile->header->polyCount);
-		printf("DEBUG offMeshBase = %d\n", tile->header->offMeshBase);
-		printf("DEBUG offMeshConCount = %d\n", tile->header->offMeshConCount);
-	}
+	printf("polyCount = %d\n", ((const dtNavMesh*)navMesh)->getTile(0)->header->polyCount);
+	printf("offMeshConCount = %d\n", ((const dtNavMesh*)navMesh)->getTile(0)->header->offMeshConCount);
+	printf("offMeshBase = %d\n", ((const dtNavMesh*)navMesh)->getTile(0)->header->offMeshBase);
 
 	/* TILED */
 	// dtNavMeshParams *navMeshParams;
@@ -86,8 +124,45 @@
 	return 1;
 }
 
+static int wrap_dtNavMesh_getOffMeshConnections(lua_State *L) {
+	dtNavMesh *navMesh = *static_cast<dtNavMesh**>(luaL_checkudata(L, 1, LUA_META_WRAP_DTNAVMESH));
+
+	int count = 0;
+
+	for (int i = 0; i < navMesh->getMaxTiles(); ++i)
+	{
+		const dtMeshTile* tile = ((const dtNavMesh*)navMesh)->getTile(i);
+		if (!tile->header) continue;
+		count += tile->header->offMeshConCount;
+	}
+
+	lua_pushnumber(L, count);
+
+	lua_pushnumber(L, count);
+
+	path_new(L);
+
+	dtPolyRef *offMeshConPolyRef = *static_cast<dtPolyRef**>(luaL_checkudata(L, 3, LUA_META_PATH));
+
+	int k = 0;
+
+	for (int i = 0; i < navMesh->getMaxTiles(); ++i)
+	{
+		const dtMeshTile* tile = ((const dtNavMesh*)navMesh)->getTile(i);
+		const dtPolyRef base = navMesh->getPolyRefBase(tile);
+		if (!tile->header) continue;
+		for (int j = 0; j < tile->header->offMeshConCount; ++j)
+		{
+			offMeshConPolyRef[k] = base | (dtPolyRef)tile->offMeshCons[j].poly;
+			++k;
+		}
+	}
+
+	return 2;
+}
+
 static int wrap_dtNavMesh_free(lua_State *L) {
-	printf("wrap_dtNavMesh_free\n");
+	// printf("wrap_dtNavMesh_free\n");
 	dtNavMesh *navMesh = *static_cast<dtNavMesh**>(luaL_checkudata(L, 1, LUA_META_WRAP_DTNAVMESH));
 	delete navMesh;
 	return 0;

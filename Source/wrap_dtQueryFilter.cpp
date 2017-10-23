@@ -28,7 +28,7 @@ static int wrap_dtQueryFilter_setAreaCost(lua_State *L) {
 }
 
 static int wrap_dtQueryFilter_free(lua_State *L) {
-	printf("wrap_dtQueryFilter_free\n");
+	// printf("wrap_dtQueryFilter_free\n");
 	dtQueryFilter *queryFilter = *static_cast<dtQueryFilter**>(luaL_checkudata(L, 1, LUA_META_WRAP_DTQUERYFILTER));
 	delete queryFilter;
 	return 0;

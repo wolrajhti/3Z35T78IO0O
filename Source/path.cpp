@@ -22,7 +22,7 @@ int path_new(lua_State *L) {
 }
 
 static int path_free(lua_State *L) {
-	printf("path_free\n");
+	// printf("path_free\n");
 	dtPolyRef *path = *static_cast<dtPolyRef**>(luaL_checkudata(L, 1, LUA_META_PATH));
 	free(path);
 	return 0;

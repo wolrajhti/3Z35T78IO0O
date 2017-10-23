@@ -15,6 +15,7 @@
 # include "wrap_dtQueryFilter.h"
 # include "wrap_dtNavMeshQuery.h"
 # include "path.h"
+# include "vector3f.h"
 
 # define LUA_META_WRAP_DTPATHCORRIDOR "wrap_dtPathCorridor"
 
@@ -22,6 +23,7 @@
 
 static int reset(lua_State *L);
 static int setCorridor(lua_State *L);
+static int wrap_dtPathCorridor_getPos(lua_State *L);
 static int wrap_dtPathCorridor_findCorners(lua_State *L);
 static int wrap_dtPathCorridor_movePosition(lua_State *L);
 static int wrap_dtPathCorridor_moveTargetPosition(lua_State *L);
