@@ -1,6 +1,6 @@
 #include "wrap_rcPolyMesh.h"
 
-/*static*/ int wrap_rcPolyMesh_new(lua_State *L) {
+int wrap_rcPolyMesh_new(lua_State *L) {
 	rcContext *context = *static_cast<rcContext**>(luaL_checkudata(L, 1, LUA_META_WRAP_RCCONTEXT));
 	rcContourSet *contourSet = *static_cast<rcContourSet**>(luaL_checkudata(L, 2, LUA_META_WRAP_RCCONTOURSET));
 

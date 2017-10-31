@@ -33,7 +33,19 @@ static int reset(lua_State *L) {
 	printf("\ndtPathCorridor:reset\n--------------------\n");
 	dtPathCorridor *pathCorridor = *static_cast<dtPathCorridor**>(luaL_checkudata(L, 1, LUA_META_WRAP_DTPATHCORRIDOR));
 	dtPolyRef *pStart = *static_cast<dtPolyRef**>(luaL_checkudata(L, 2, LUA_META_PATH));
-	float *start = *static_cast<float**>(luaL_checkudata(L, 3, LUA_META_VECTOR3F));
+	// float *start = *static_cast<float**>(luaL_checkudata(L, 3, LUA_META_VECTOR3F));
+
+	float start[3];
+
+	lua_rawgeti(L, 3, 1);
+	lua_rawgeti(L, 3, 2);
+	lua_rawgeti(L, 3, 3);
+
+	start[0] = (float)luaL_checknumber(L, -3);
+	start[1] = (float)luaL_checknumber(L, -2);
+	start[2] = (float)luaL_checknumber(L, -1);
+
+	lua_pop(L, 3);
 	/* passing dtNavMesh here is for debug purpose only */
 	dtNavMesh *navMesh = *static_cast<dtNavMesh**>(luaL_checkudata(L, 4, LUA_META_WRAP_DTNAVMESH));
 
@@ -51,7 +63,20 @@ static int reset(lua_State *L) {
 static int setCorridor(lua_State *L) {
 	printf("\ndtPathCorridor:setCorridor\n--------------------------\n");
 	dtPathCorridor *pathCorridor = *static_cast<dtPathCorridor**>(luaL_checkudata(L, 1, LUA_META_WRAP_DTPATHCORRIDOR));
-	float *end = *static_cast<float**>(luaL_checkudata(L, 2, LUA_META_VECTOR3F));
+	// float *end = *static_cast<float**>(luaL_checkudata(L, 2, LUA_META_VECTOR3F));
+
+	float end[3];
+
+	lua_rawgeti(L, 2, 1);
+	lua_rawgeti(L, 2, 2);
+	lua_rawgeti(L, 2, 3);
+
+	end[0] = (float)luaL_checknumber(L, -3);
+	end[1] = (float)luaL_checknumber(L, -2);
+	end[2] = (float)luaL_checknumber(L, -1);
+
+	lua_pop(L, 3);
+
 	dtPolyRef *path = *static_cast<dtPolyRef**>(luaL_checkudata(L, 3, LUA_META_PATH));
 	int npoly = luaL_checkint(L, 4);
 
@@ -142,7 +167,20 @@ static int wrap_dtPathCorridor_getPos(lua_State *L) {
 
 static int wrap_dtPathCorridor_movePosition(lua_State *L) {
 	dtPathCorridor *pathCorridor = *static_cast<dtPathCorridor**>(luaL_checkudata(L, 1, LUA_META_WRAP_DTPATHCORRIDOR));
-	float *pos = *static_cast<float**>(luaL_checkudata(L, 2, LUA_META_VECTOR3F));
+	// float *pos = *static_cast<float**>(luaL_checkudata(L, 2, LUA_META_VECTOR3F));
+
+	float pos[3];
+
+	lua_rawgeti(L, 2, 1);
+	lua_rawgeti(L, 2, 2);
+	lua_rawgeti(L, 2, 3);
+
+	pos[0] = (float)luaL_checknumber(L, -3);
+	pos[1] = (float)luaL_checknumber(L, -2);
+	pos[2] = (float)luaL_checknumber(L, -1);
+
+	lua_pop(L, 3);
+
 	dtNavMeshQuery *navMeshQuery = *static_cast<dtNavMeshQuery**>(luaL_checkudata(L, 3, LUA_META_WRAP_DTNAVMESHQUERY));
 
 	dtQueryFilter *queryFilter = *static_cast<dtQueryFilter**>(luaL_checkudata(L, 4, LUA_META_WRAP_DTQUERYFILTER));
@@ -154,7 +192,20 @@ static int wrap_dtPathCorridor_movePosition(lua_State *L) {
 
 static int wrap_dtPathCorridor_moveTargetPosition(lua_State *L) {
 	dtPathCorridor *pathCorridor = *static_cast<dtPathCorridor**>(luaL_checkudata(L, 1, LUA_META_WRAP_DTPATHCORRIDOR));
-	float *pos = *static_cast<float**>(luaL_checkudata(L, 2, LUA_META_VECTOR3F));
+	// float *pos = *static_cast<float**>(luaL_checkudata(L, 2, LUA_META_VECTOR3F));
+
+	float pos[3];
+
+	lua_rawgeti(L, 2, 1);
+	lua_rawgeti(L, 2, 2);
+	lua_rawgeti(L, 2, 3);
+
+	pos[0] = (float)luaL_checknumber(L, -3);
+	pos[1] = (float)luaL_checknumber(L, -2);
+	pos[2] = (float)luaL_checknumber(L, -1);
+
+	lua_pop(L, 3);
+
 	dtNavMeshQuery *navMeshQuery = *static_cast<dtNavMeshQuery**>(luaL_checkudata(L, 3, LUA_META_WRAP_DTNAVMESHQUERY));
 
 	dtQueryFilter *queryFilter = *static_cast<dtQueryFilter**>(luaL_checkudata(L, 4, LUA_META_WRAP_DTQUERYFILTER));

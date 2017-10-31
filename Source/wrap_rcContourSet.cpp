@@ -1,6 +1,6 @@
 #include "wrap_rcContourSet.h"
 
-/*static*/ int wrap_rcContourSet_new(lua_State *L) {
+int wrap_rcContourSet_new(lua_State *L) {
 	rcContext *context = *static_cast<rcContext**>(luaL_checkudata(L, 1, LUA_META_WRAP_RCCONTEXT));
 	rcCompactHeightfield *compactHeightfield = *static_cast<rcCompactHeightfield**>(luaL_checkudata(L, 2, LUA_META_WRAP_RCCOMPACTHEIGHTFIELD));
 

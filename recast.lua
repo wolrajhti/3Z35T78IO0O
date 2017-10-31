@@ -4,9 +4,11 @@ local rl = require('rl')
 
 local context = rl.newRcContext()
 
-local min = rl.newVector3f(0, 0, 0)
-local max = rl.newVector3f(800, 2, 600)
-
+-- local min = rl.newVector3f(0, 0, 0)
+-- local max = rl.newVector3f(800, 2, 600)
+local min = {0, 0, 0}
+local max = {800, 2, 600}
+--
 local heightfield = rl.newRcHeightfield(context, 800, 600, min, max, 1, 1)
 
 -- local obj = obj_loader.load('test.obj')
@@ -24,77 +26,26 @@ local heightfield = rl.newRcHeightfield(context, 800, 600, min, max, 1, 1)
 -- 	)
 -- end
 
-heightfield:rcRasterizeTriangle(
-	context,
-	rl.newVector3f(0, 0, 0),
-	rl.newVector3f(400, 0, 0),
-	rl.newVector3f(400, 0, 300),
-	1
-)
+heightfield:rcRasterizeTriangles(context, 1, {
+	0, 0, 0,   400, 0, 0,   400, 0, 300,
+	0, 0, 0,   400, 0, 300,   0, 0, 300,
+	100, 0, 100,   200, 0, 100,   200, 0, 500,
+	100, 0, 100,  200, 0, 500,   100, 0, 500,
+	50, 0, 400,   400, 0, 400,   400, 0, 450,
+	50, 0, 400,   400, 0, 450,   50, 0, 450
+})
 
-heightfield:rcRasterizeTriangle(
-	context,
-	rl.newVector3f(0, 0, 0),
-	rl.newVector3f(400, 0, 300),
-	rl.newVector3f(0, 0, 300),
-	1
-)
-
-heightfield:rcRasterizeTriangle(
-	context,
-	rl.newVector3f(100, 0, 100),
-	rl.newVector3f(200, 0, 100),
-	rl.newVector3f(200, 0, 500),
-	1
-)
-
-heightfield:rcRasterizeTriangle(
-	context,
-	rl.newVector3f(100, 0, 100),
-	rl.newVector3f(200, 0, 500),
-	rl.newVector3f(100, 0, 500),
-	1
-)
-
-heightfield:rcRasterizeTriangle(
-	context,
-	rl.newVector3f(250, 0, 100),
-	rl.newVector3f(350, 0, 100),
-	rl.newVector3f(350, 0, 500),
-	2
-)
-
-heightfield:rcRasterizeTriangle(
-	context,
-	rl.newVector3f(250, 0, 100),
-	rl.newVector3f(350, 0, 500),
-	rl.newVector3f(250, 0, 500),
-	2
-)
-
-heightfield:rcRasterizeTriangle(
-	context,
-	rl.newVector3f(50, 0, 400),
-	rl.newVector3f(400, 0, 400),
-	rl.newVector3f(400, 0, 450),
-	1
-)
-
-heightfield:rcRasterizeTriangle(
-	context,
-	rl.newVector3f(50, 0, 400),
-	rl.newVector3f(400, 0, 450),
-	rl.newVector3f(50, 0, 450),
-	1
-)
+heightfield:rcRasterizeTriangles(context, 2, {
+	250, 0, 100,   350, 0, 100,   350, 0, 500,
+	250, 0, 100,   350, 0, 500,   250, 0, 500
+})
 
 -- local rcSx, rcSy, rcEx, rcEy = 300, 150, 300, 425
-
 local rcSx, rcSy, rcEx, rcEy = 150, 65, 300, 425
 
 -- heightfield:printSpans()
 
-local compactHeightfield = rl.newRcCompactHeightfield(context, 3, 0, heightfield)
+local compactHeightfield = rl.newRcCompactHeightfield(context, 0, 0, heightfield)
 
 compactHeightfield:rcErodeWalkableArea(context, 5)
 compactHeightfield:rcBuildDistanceField(context)
@@ -141,8 +92,10 @@ local navMeshQuery = rl.newDtNavMeshQuery(navMesh)
 
 -- local rcSx, rcSy, rcEx, rcEy = 320, 80, 75, 425
 
-vS = rl.newVector3f(rcSx, 0, rcSy)
-vE = rl.newVector3f(rcEx, 0, rcEy)
+-- vS = rl.newVector3f(rcSx, 0, rcSy)
+-- vE = rl.newVector3f(rcEx, 0, rcEy)
+vS = {rcSx, 0, rcSy}
+vE = {rcSx, 0, rcSy}
 
 local pS = navMeshQuery:findNearestPoly(vS, navMesh, queryFilter)
 local pE = navMeshQuery:findNearestPoly(vE, navMesh, queryFilter)
@@ -157,8 +110,10 @@ pathCorridor:setCorridor(vE, path, npath, navMesh, navMeshQuery, queryFilter)
 
 local corridorCorners = pathCorridor:findCorners(navMeshQuery, queryFilter)
 
-local movePos = rl.newVector3f(0, 0, 0)
-local moveTargetPos = rl.newVector3f(0, 0, 0)
+-- local movePos = rl.newVector3f(0, 0, 0)
+-- local moveTargetPos = rl.newVector3f(0, 0, 0)
+local movePos = {0, 0, 0}
+local moveTargetPos = {0, 0, 0}
 
 -- print('corridorCorners', corridorCorners)
 --
@@ -398,17 +353,24 @@ local recast = {
 	end,
 	movePosition = function(dx, dy)
 		rcSx, rcSy = rcSx + dx, rcSy + dy
-		movePos:setX(rcSx)
-		movePos:setY(0)
-		movePos:setZ(rcSy)
+
+		movePos[1] = rcSx
+		movePos[2] = 0
+		movePos[3] = rcSy
+		-- movePos:setX(rcSx)
+		-- movePos:setY(0)
+		-- movePos:setZ(rcSy)
 
 		return pathCorridor:movePosition(movePos, navMeshQuery, queryFilter)
 	end,
 	moveTargetPosition = function(dx, dy)
 		rcEx, rcEy = rcEx + dx, rcEy + dy
-		moveTargetPos:setX(rcEx)
-		moveTargetPos:setY(0)
-		moveTargetPos:setZ(rcEy)
+		moveTargetPos[1] = rcEx
+		moveTargetPos[2] = 0
+		moveTargetPos[3] = rcEy
+		-- moveTargetPos:setX(rcEx)
+		-- moveTargetPos:setY(0)
+		-- moveTargetPos:setZ(rcEy)
 
 		return pathCorridor:moveTargetPosition(moveTargetPos, navMeshQuery, queryFilter)
 	end,

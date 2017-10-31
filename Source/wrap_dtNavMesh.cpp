@@ -1,6 +1,6 @@
 #include "wrap_dtNavMesh.h"
 
-/*static*/ int wrap_dtNavMesh_new(lua_State *L) {
+int wrap_dtNavMesh_new(lua_State *L) {
 	rcPolyMesh *polyMesh = *static_cast<rcPolyMesh**>(luaL_checkudata(L, 1, LUA_META_WRAP_RCPOLYMESH));
 
 	int offset = lua_gettop(L) == 2 ? 1 : 0;

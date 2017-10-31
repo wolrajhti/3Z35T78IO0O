@@ -1,6 +1,6 @@
 #include "wrap_dtNavMeshQuery.h"
 
-/*static*/ int wrap_dtNavMeshQuery_new(lua_State *L) {
+int wrap_dtNavMeshQuery_new(lua_State *L) {
 	dtNavMesh *navMesh = *static_cast<dtNavMesh**>(luaL_checkudata(L, 1, LUA_META_WRAP_DTNAVMESH));
 
 	*static_cast<dtNavMeshQuery**>(lua_newuserdata(L, sizeof(dtNavMeshQuery*))) = new dtNavMeshQuery();
@@ -29,7 +29,18 @@ static int findNearestPoly(lua_State *L) {
 	printf("\nfindNearestPoly\n---------------\n");
 	dtNavMeshQuery *navMeshQuery = *static_cast<dtNavMeshQuery**>(luaL_checkudata(L, 1, LUA_META_WRAP_DTNAVMESHQUERY));
 
-	float *pos = *static_cast<float**>(luaL_checkudata(L, 2, LUA_META_VECTOR3F));
+	// float *pos = *static_cast<float**>(luaL_checkudata(L, 2, LUA_META_VECTOR3F));
+	float pos[3];
+
+	lua_rawgeti(L, 2, 1);
+	lua_rawgeti(L, 2, 2);
+	lua_rawgeti(L, 2, 3);
+
+	pos[0] = (float)luaL_checknumber(L, -3);
+	pos[1] = (float)luaL_checknumber(L, -2);
+	pos[2] = (float)luaL_checknumber(L, -1);
+
+	lua_pop(L, 3);
 
 	/* passing navMesh here for debug purpose only */
 	dtNavMesh *navMesh = *static_cast<dtNavMesh**>(luaL_checkudata(L, 3, LUA_META_WRAP_DTNAVMESH));
@@ -73,8 +84,32 @@ static int findPath(lua_State *L) {
 	printf("\nfindPath\n--------\n");
 	dtNavMeshQuery *navMeshQuery = *static_cast<dtNavMeshQuery**>(luaL_checkudata(L, 1, LUA_META_WRAP_DTNAVMESHQUERY));
 
-	float *start = *static_cast<float**>(luaL_checkudata(L, 2, LUA_META_VECTOR3F));
-	float *end = *static_cast<float**>(luaL_checkudata(L, 3, LUA_META_VECTOR3F));
+	// float *start = *static_cast<float**>(luaL_checkudata(L, 2, LUA_META_VECTOR3F));
+	// float *end = *static_cast<float**>(luaL_checkudata(L, 3, LUA_META_VECTOR3F));
+
+	float start[3];
+
+	lua_rawgeti(L, 2, 1);
+	lua_rawgeti(L, 2, 2);
+	lua_rawgeti(L, 2, 3);
+
+	start[0] = (float)luaL_checknumber(L, -3);
+	start[1] = (float)luaL_checknumber(L, -2);
+	start[2] = (float)luaL_checknumber(L, -1);
+
+	lua_pop(L, 3);
+
+	float end[3];
+
+	lua_rawgeti(L, 3, 1);
+	lua_rawgeti(L, 3, 2);
+	lua_rawgeti(L, 3, 3);
+
+	end[0] = (float)luaL_checknumber(L, -3);
+	end[1] = (float)luaL_checknumber(L, -2);
+	end[2] = (float)luaL_checknumber(L, -1);
+
+	lua_pop(L, 3);
 
 	printf("start %.2f %.2f %.2f \n", start[0], start[1], start[2]);
 	printf("end   %.2f %.2f %.2f \n", end[0], end[1], end[2]);

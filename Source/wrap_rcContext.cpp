@@ -1,6 +1,6 @@
 #include "wrap_rcContext.h"
 
-/*static*/ int wrap_rcContext_new(lua_State *L) {
+int wrap_rcContext_new(lua_State *L) {
 	*static_cast<rcContext**>(lua_newuserdata(L, sizeof(rcContext*))) = new rcContext();
 
 	if (luaL_newmetatable(L, LUA_META_WRAP_RCCONTEXT)) {

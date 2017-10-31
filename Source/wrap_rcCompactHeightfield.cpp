@@ -1,6 +1,6 @@
 #include "wrap_rcCompactHeightfield.h"
 
-/*static*/ int wrap_rcCompactHeightfield_new(lua_State *L) {
+int wrap_rcCompactHeightfield_new(lua_State *L) {
 	rcContext *context = *static_cast<rcContext**>(luaL_checkudata(L, 1, LUA_META_WRAP_RCCONTEXT));
 
 	int walkableHeight = luaL_checkint(L, 2);

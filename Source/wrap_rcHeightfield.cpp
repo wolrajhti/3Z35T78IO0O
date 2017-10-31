@@ -1,13 +1,35 @@
 #include "wrap_rcHeightfield.h"
 
-/*static*/ int wrap_rcHeightfield_new(lua_State *L) {
+int wrap_rcHeightfield_new(lua_State *L) {
 	rcContext *context = *static_cast<rcContext**>(luaL_checkudata(L, 1, LUA_META_WRAP_RCCONTEXT));
 
 	int width = luaL_checkint(L, 2);
 	int height = luaL_checkint(L, 3);
 
-	float *min = *static_cast<float**>(luaL_checkudata(L, 4, LUA_META_VECTOR3F));
-	float *max = *static_cast<float**>(luaL_checkudata(L, 5, LUA_META_VECTOR3F));
+	float min[3], max[3];
+
+	lua_rawgeti(L, 4, 1);
+	lua_rawgeti(L, 4, 2);
+	lua_rawgeti(L, 4, 3);
+
+	min[0] = (float)luaL_checknumber(L, -3);
+	min[1] = (float)luaL_checknumber(L, -2);
+	min[2] = (float)luaL_checknumber(L, -1);
+
+	lua_pop(L, 3);
+
+	lua_rawgeti(L, 5, 1);
+	lua_rawgeti(L, 5, 2);
+	lua_rawgeti(L, 5, 3);
+
+	max[0] = (float)luaL_checknumber(L, -3);
+	max[1] = (float)luaL_checknumber(L, -2);
+	max[2] = (float)luaL_checknumber(L, -1);
+
+	lua_pop(L, 3);
+
+	// float *min = *static_cast<float**>(luaL_checkudata(L, 4, LUA_META_VECTOR3F));
+	// float *max = *static_cast<float**>(luaL_checkudata(L, 5, LUA_META_VECTOR3F));
 
 	float cs = luaL_checknumber(L, 6);
 	float ch = luaL_checknumber(L, 7);
@@ -17,6 +39,7 @@
 	if (luaL_newmetatable(L, LUA_META_WRAP_RCHEIGHTFIELD)) {
 		static const luaL_Reg methods[] = {
 			{"rcRasterizeTriangle", wrap_rcRasterizeTriangle},
+			{"rcRasterizeTriangles", wrap_rcRasterizeTriangles},
 			{"printSpans", printSpans},
 			{"__gc", wrap_rcHeightfield_free},
 			{nullptr, nullptr}
@@ -50,7 +73,47 @@ static int wrap_rcRasterizeTriangle(lua_State *L) {
 	return 0;
 }
 
+static int wrap_rcRasterizeTriangles(lua_State *L) {
+	rcHeightfield *heightfield = *static_cast<rcHeightfield**>(luaL_checkudata(L, 1, LUA_META_WRAP_RCHEIGHTFIELD));
+	rcContext *context = *static_cast<rcContext**>(luaL_checkudata(L, 2, LUA_META_WRAP_RCCONTEXT));
 
+	unsigned char area = (unsigned char)luaL_checkint(L, 3);
+
+	int size = 0;
+
+	lua_pushnil(L);  /* first key */
+	while (lua_next(L, 4) != 0) {
+	  lua_pop(L, 1);
+	  ++size;
+	}
+	printf("size = %d\n", size);
+
+	int count = size / 9;
+
+	float verts[size];
+	unsigned char areas[count];
+
+	for (int i = 0; i < size; i += 9) {
+		for (int j = 0; j < 9; ++j) {
+			lua_rawgeti(L, 4, i + j + 1);
+		}
+		verts[i + 0] = (float)luaL_checknumber(L, -9);
+		verts[i + 1] = (float)luaL_checknumber(L, -8);
+		verts[i + 2] = (float)luaL_checknumber(L, -7);
+		verts[i + 3] = (float)luaL_checknumber(L, -6);
+		verts[i + 4] = (float)luaL_checknumber(L, -5);
+		verts[i + 5] = (float)luaL_checknumber(L, -4);
+		verts[i + 6] = (float)luaL_checknumber(L, -3);
+		verts[i + 7] = (float)luaL_checknumber(L, -2);
+		verts[i + 8] = (float)luaL_checknumber(L, -1);
+		areas[i / 9] = luaL_checknumber(L, 3);
+		lua_pop(L, 9);
+	}
+
+	rcRasterizeTriangles(context, verts, areas, count, *heightfield, 0);
+
+	return 0;
+}
 
 static int printSpans(lua_State *L) {
 	rcHeightfield *heightfield = *static_cast<rcHeightfield**>(luaL_checkudata(L, 1, LUA_META_WRAP_RCHEIGHTFIELD));

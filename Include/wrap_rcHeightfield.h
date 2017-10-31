@@ -13,6 +13,7 @@
 
 /*static*/ int wrap_rcHeightfield_new(lua_State *L);
 static int wrap_rcRasterizeTriangle(lua_State *L);
+static int wrap_rcRasterizeTriangles(lua_State *L);
 static int wrap_rcHeightfield_free(lua_State *L);
 
 static int printSpans(lua_State *L);
