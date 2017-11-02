@@ -4,27 +4,10 @@ local rl = require('rl')
 
 local context = rl.newRcContext()
 
--- local min = rl.newVector3f(0, 0, 0)
--- local max = rl.newVector3f(800, 2, 600)
 local min = {0, 0, 0}
 local max = {800, 2, 600}
---
-local heightfield = rl.newRcHeightfield(context, 800, 600, min, max, 1, 1)
 
--- local obj = obj_loader.load('test.obj')
---
--- for i, f in ipairs(obj.f) do
--- 	print('---')
--- 	print(f[1].v, obj.v[f[1].v].x, obj.v[f[1].v].y, obj.v[f[1].v].z)
--- 	print(f[2].v, obj.v[f[2].v].x, obj.v[f[2].v].y, obj.v[f[2].v].z)
--- 	print(f[3].v, obj.v[f[3].v].x, obj.v[f[3].v].y, obj.v[f[3].v].z)
--- 	heightfield:rcRasterizeTriangle(
--- 		context,
--- 		rl.newVector3f(obj.v[f[1].v].x, obj.v[f[1].v].y, obj.v[f[1].v].z),
--- 		rl.newVector3f(obj.v[f[2].v].x, obj.v[f[2].v].y, obj.v[f[2].v].z),
--- 		rl.newVector3f(obj.v[f[3].v].x, obj.v[f[3].v].y, obj.v[f[3].v].z)
--- 	)
--- end
+local heightfield = rl.newRcHeightfield(context, 800, 600, min, max, 1, 1)
 
 heightfield:rcRasterizeTriangles(context, 1, {
 	0, 0, 0,   400, 0, 0,   400, 0, 300,
@@ -40,10 +23,7 @@ heightfield:rcRasterizeTriangles(context, 2, {
 	250, 0, 100,   350, 0, 500,   250, 0, 500
 })
 
--- local rcSx, rcSy, rcEx, rcEy = 300, 150, 300, 425
 local rcSx, rcSy, rcEx, rcEy = 150, 65, 300, 425
-
--- heightfield:printSpans()
 
 local compactHeightfield = rl.newRcCompactHeightfield(context, 0, 0, heightfield)
 
@@ -58,7 +38,7 @@ local polyMesh = rl.newRcPolyMesh(context, contourSet)
 local rawVerts = {polyMesh:getVerts()}
 local rawPolys = {polyMesh:getPolys()}
 local areas = {polyMesh:getAreas()}
--- print(unpack(areas))
+
 local nvp = polyMesh:getNvp()
 local rcPolys = {}
 
@@ -69,7 +49,6 @@ for i = 1, #rawPolys, nvp do
 		table.insert(poly, rawVerts[rawPolys[i + j] * 2 - 1])
 		table.insert(poly, rawVerts[rawPolys[i + j] * 2 + 0])
 	end
-	-- print('poly', unpack(poly))
 	table.insert(rcPolys, poly)
 end
 
@@ -77,10 +56,6 @@ local navMesh = rl.newDtNavMesh(polyMesh, {
 	-- x, y, z, x, y, z, radius, dir, area, flag, userId
 	150, 1, 75, 150, 1, 475, 10, 2, 5, 12, 666
 })
-
-local offMeshConCount, offMeshConnections = navMesh:getOffMeshConnections()
-
-print('offMeshConCount = ', offMeshConCount)
 
 local queryFilter = rl.newDtQueryFilter()
 
@@ -90,10 +65,6 @@ queryFilter:setAreaCost(5, 1)
 
 local navMeshQuery = rl.newDtNavMeshQuery(navMesh)
 
--- local rcSx, rcSy, rcEx, rcEy = 320, 80, 75, 425
-
--- vS = rl.newVector3f(rcSx, 0, rcSy)
--- vE = rl.newVector3f(rcEx, 0, rcEy)
 vS = {rcSx, 0, rcSy}
 vE = {rcSx, 0, rcSy}
 
@@ -110,16 +81,8 @@ pathCorridor:setCorridor(vE, path, npath, navMesh, navMeshQuery, queryFilter)
 
 local corridorCorners = pathCorridor:findCorners(navMeshQuery, queryFilter)
 
--- local movePos = rl.newVector3f(0, 0, 0)
--- local moveTargetPos = rl.newVector3f(0, 0, 0)
 local movePos = {0, 0, 0}
 local moveTargetPos = {0, 0, 0}
-
--- print('corridorCorners', corridorCorners)
---
--- for k, v in ipairs(corridorCorners) do
--- 	print(k, v)
--- end
 
 local currentVertices = {}
 
@@ -128,10 +91,8 @@ local triangles = {}
 local index = {}
 local walkableRadius = 5
 
--- local rcPolys = {}
--- local rcCenters = {}
 local rcWalkableRadius = -1
--- local rcSx, rcSy, rcEx, rcEy = nil, nil, nil, nil
+
 local rcThrough = {}
 local rcPath = {}
 local rcSPath = {}

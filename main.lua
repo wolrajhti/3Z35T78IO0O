@@ -5,6 +5,8 @@ Vector = require('geometry.vector')
 VerticesConverter = require('geometry.verticesConverter')
 Curve = require('geometry.curve')
 
+local NavMesh = require('NavMesh')
+
 local recast = require('recast')
 
 love.graphics.setLineWidth(2)
@@ -18,6 +20,37 @@ love.graphics.setLineStyle('rough')
 -- mesh:import('test.obj')
 
 function love.load()
+	navMesh = NavMesh(800, 600)
+
+	navMesh.areas['GROUND'] = 10
+	navMesh.areas['JUMP'] = 25
+	navMesh.areas['DIRT'] = 50
+
+	navMesh:addTriangles('GROUND', {
+		0, 0,   400, 0,   400, 300,
+		0, 0,   400, 300,   0, 300,
+		100, 100,   200, 100,   200, 500,
+		100, 100,  200, 500,   100, 500,
+		50, 400,   400, 400,   400, 450,
+		50, 400,   400, 450,   50, 450
+	})
+
+	navMesh:addTriangles('DIRT', {
+		250, 100,   350, 100,   350, 500,
+		250, 100,   350, 500,   250, 500
+	})
+
+	navMesh:addOffmeshConnection('JUMP', {
+		startPos = {150, 75},
+		endPos = {150, 475},
+		radius = 10,
+		dir = 2
+	})
+
+	navMesh:build(10)
+	-- navMesh:build(5)
+	-- navMesh:build(2)
+
 end
 
 function love.update(dt)

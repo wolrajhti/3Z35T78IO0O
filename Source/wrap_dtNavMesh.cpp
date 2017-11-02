@@ -5,6 +5,8 @@ int wrap_dtNavMesh_new(lua_State *L) {
 
 	int offset = lua_gettop(L) == 2 ? 1 : 0;
 
+	printf("gettop = %d\n", lua_gettop(L));
+
 	*static_cast<dtNavMesh**>(lua_newuserdata(L, sizeof(dtNavMesh*))) = new dtNavMesh();
 
 	if (luaL_newmetatable(L, LUA_META_WRAP_DTNAVMESH)) {
@@ -51,7 +53,7 @@ int wrap_dtNavMesh_new(lua_State *L) {
 		  lua_pop(L, 1);
 		  ++size;
 		}
-		// printf("size = %d\n", size);
+		printf("size = %d\n", size);
 	}
 
 	int offMeshConCount = size / 11;
@@ -67,26 +69,38 @@ int wrap_dtNavMesh_new(lua_State *L) {
 		for (int j = 0; j < 11; ++j) {
 			lua_rawgeti(L, 2, i + j + 1);
 		}
-
+		printf("POP1\n");
 		offMeshConVerts[i * 6 + 0] = (float)luaL_checknumber(L, -11);
+		printf("POP2\n");
 		offMeshConVerts[i * 6 + 1] = (float)luaL_checknumber(L, -10);
+		printf("POP3\n");
 		offMeshConVerts[i * 6 + 2] = (float)luaL_checknumber(L, -9);
+		printf("POP4\n");
 
 		offMeshConVerts[i * 6 + 3] = (float)luaL_checknumber(L, -8);
+		printf("POP5\n");
 		offMeshConVerts[i * 6 + 4] = (float)luaL_checknumber(L, -7);
+		printf("POP6\n");
 		offMeshConVerts[i * 6 + 5] = (float)luaL_checknumber(L, -6);
+		printf("POP7\n");
 
 		offMeshConRads[i] = (float)luaL_checknumber(L, -5);
+		printf("POP8\n");
 
 		offMeshConDirs[i] = luaL_checkint(L, -4) == 2 ? DT_OFFMESH_CON_BIDIR : 0;
+		printf("POP9\n");
 
 		offMeshConAreas[i] = luaL_checkint(L, -3);
+		printf("POP10\n");
 
 		offMeshConFlags[i] = luaL_checkint(L, -2);
+		printf("POP11\n");
 
 		offMeshConId[i] = luaL_checkint(L, -1);
+		printf("POP12\n");
 
 		lua_pop(L, 11);
+		printf("POP\n");
 	}
 
 	params.offMeshConVerts = offMeshConVerts;

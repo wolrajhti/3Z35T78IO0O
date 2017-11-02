@@ -2,29 +2,54 @@ local NavMesh = class('NavMesh')
 
 local rl = require('rl')
 
+local function imap(t, func)
+	local tm = {}
+	for i, v in ipairs(t) do
+		table.insert(tm, func(i, v))
+	end
+	return tm
+end
+
 function NavMesh:initialize(w, h, min, max, cs, ch)
 	self.w = w
 	self.h = h
 	self.min = min or {0, 0, 0}
-	self.max = max or {w, 1, h}
+	self.max = max or {w, 2, h}
 	self.cs = cs or 1
 	self.ch = ch or 1
 	self.ctx = rl.newRcContext()
 	self.hf = rl.newRcHeightfield(self.ctx, self.w, self.h, self.min, self.max, self.cs, self.ch)
+	self.chf = {}
+	self.contourSets = {}
+	self.pm = {}
+	self.nm = {}
 	self.oc = {} -- offmesh connections
-	self.ac = {} -- area costs
+	self.areas = setmetatable({__data = {}, __count = 0}, {
+		__index = function(t, k)
+			return rawget(t.__data, k).area
+		end,
+		__newindex = function(t, k, v)
+			t.__count = t.__count + 1
+			rawset(t.__data, k, {area = t.__count, cost = v})
+		end
+	}) -- area costs
 end
 
-function NavMesh:addTriangles(area, cost, triangles)
-	self.ac[area] = cost
-	self.hf:rcRasterizeTriangles(self.ctx, area, triangles)
+function NavMesh:addTriangles(areaName, triangles)
+	local tris = {}
+	for i = 1, #triangles, 2 do
+		table.insert(tris, triangles[i])
+		table.insert(tris, 0)
+		table.insert(tris, triangles[i + 1])
+	end
+	self.hf:rcRasterizeTriangles(self.ctx, self.areas[areaName], tris)
 end
 
-function NavMesh:addOffmeshConnection(start, end, radius, dir, area, flag, userId)
+function NavMesh:addOffmeshConnection(areaName, params)
 	table.insert(self.oc, {
-		start[1], start[2], start[3],
-		end[1], end[2], end[3],
-		radius, dir, area, flag, userId
+		params.startPos[1], 1, params.startPos[2],
+		params.endPos[1], 1, params.endPos[2],
+		params.radius, params.dir or 2, self.areas[areaName], flag or 12, userId or 666
 	})
 end
 
@@ -35,9 +60,13 @@ function NavMesh:build(radius)
 	self.chf[radius]:rcBuildDistanceField(self.ctx)
 	self.chf[radius]:rcBuildRegions(self.ctx)
 
-	self.cs[radius] = rl.newRcContourSet(self.ctx, self.chf[radius], 10, 50)
+	self.contourSets[radius] = rl.newRcContourSet(self.ctx, self.chf[radius], 10, 50)
 
-	self.pm[radius] = rl.newRcPolyMesh(self.ctx, self.cs[radius])
-
+	self.pm[radius] = rl.newRcPolyMesh(self.ctx, self.contourSets[radius])
+	for i, v in ipairs(self.oc) do
+		print('offmeshcon n°'..i, unpack(v))
+	end
 	self.nm[radius] = rl.newDtNavMesh(self.pm[radius], self.oc)
 end
+
+return NavMesh
