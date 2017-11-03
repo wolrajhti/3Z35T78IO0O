@@ -48,8 +48,8 @@ function love.load()
 	})
 
 	navMesh:build(10)
-	-- navMesh:build(5)
-	-- navMesh:build(2)
+	navMesh:build(5)
+	navMesh:build(2)
 
 end
 

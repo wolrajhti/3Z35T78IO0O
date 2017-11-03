@@ -46,11 +46,17 @@ function NavMesh:addTriangles(areaName, triangles)
 end
 
 function NavMesh:addOffmeshConnection(areaName, params)
-	table.insert(self.oc, {
-		params.startPos[1], 1, params.startPos[2],
-		params.endPos[1], 1, params.endPos[2],
-		params.radius, params.dir or 2, self.areas[areaName], flag or 12, userId or 666
-	})
+	table.insert(self.oc, params.startPos[1])
+	table.insert(self.oc, 1)
+	table.insert(self.oc, params.startPos[2])
+	table.insert(self.oc, params.endPos[1])
+	table.insert(self.oc, 1)
+	table.insert(self.oc, params.endPos[2])
+	table.insert(self.oc, params.radius)
+	table.insert(self.oc, params.dir or 2)
+	table.insert(self.oc, self.areas[areaName])
+	table.insert(self.oc, flag or 12)
+	table.insert(self.oc, userId or 666)
 end
 
 function NavMesh:build(radius)
@@ -63,9 +69,7 @@ function NavMesh:build(radius)
 	self.contourSets[radius] = rl.newRcContourSet(self.ctx, self.chf[radius], 10, 50)
 
 	self.pm[radius] = rl.newRcPolyMesh(self.ctx, self.contourSets[radius])
-	for i, v in ipairs(self.oc) do
-		print('offmeshcon n°'..i, unpack(v))
-	end
+	
 	self.nm[radius] = rl.newDtNavMesh(self.pm[radius], self.oc)
 end
 
